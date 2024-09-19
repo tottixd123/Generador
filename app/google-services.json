@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "696375107230",
+    "project_id": "generador-a4f28",
+    "storage_bucket": "generador-a4f28.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:696375107230:android:fc7b175d07d534d2cbe58f",
+        "android_client_info": {
+          "package_name": "com.example.gemerador"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVq3dfQfLMfmuF_F4flwxjizaHTZGrwD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
