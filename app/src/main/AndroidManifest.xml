@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,16 +15,20 @@
         android:theme="@style/Theme.Gemerador"
         tools:targetApi="31">
         <activity
+            android:name=".Perfil.Perfil_user"
+            android:exported="false" />
+        <activity
+            android:name=".Admin.AdminMenu"
+            android:exported="false" />
+        <activity
+            android:name=".Admin.Crear_User"
+            android:exported="false" />
+        <activity
             android:name=".Crear_Ti.Crear_nuevo_ti"
             android:exported="false" />
         <activity
             android:name=".Inicio_User.Images_de_fallos"
             android:exported="false" />
-        <activity
-            android:name=".Inicio_User.prueba1"
-            android:exported="false"
-            android:label="@string/title_activity_prueba1"
-            android:theme="@style/Theme.Gemerador.NoActionBar" />
         <activity
             android:name=".Inicio_User.Inicio_User"
             android:exported="false" />

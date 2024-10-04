@@ -1,4 +1,17 @@
 <resources>
+    <string-array name="problem_options">
+        <item>Registro de SIAF</item>
+        <item>Registro de SIGA</item>
+        <item>Mantenimiento de PC</item>
+        <item>Arreglar un problema</item>
+    </string-array>
+    <string-array name="area_options">
+        <item>Administración</item>
+        <item>Contabilidad</item>
+        <item>Recursos Humanos</item>
+        <item>Tecnología de la Información</item>
+        <item>Logística</item>
+    </string-array>
     <string name="app_name">Gemerador</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
