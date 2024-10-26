@@ -33,10 +33,13 @@ public class Crear_User extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_crear_user);
-        //iniciar Firebase Auth
-        mAuth=FirebaseAuth.getInstance();
-        mDatabase= FirebaseDatabase.getInstance().getReference("usuarios");
-        //inicializar vistas
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference("Usuarios");
+
+        initializeViews();
+        btnCrearCuenta.setOnClickListener(v -> crearCuenta());
+    }
+    private void initializeViews() {
         etNombre = findViewById(R.id.etNombre);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
@@ -44,15 +47,16 @@ public class Crear_User extends AppCompatActivity {
         etCargo = findViewById(R.id.etCargo);
         btnCrearCuenta = findViewById(R.id.btnCrearCuenta);
         cbEsAdmin = findViewById(R.id.cbEsAdmin);
-        btnCrearCuenta.setOnClickListener(v -> crearCuenta());
     }
+
+
     private void crearCuenta() {
         final String nombre = etNombre.getText().toString().trim();
         final String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         final String area = etArea.getText().toString().trim();
         final String cargo = etCargo.getText().toString().trim();
-        final boolean esAdmin = cbEsAdmin.isChecked();//cbEsAdmin esté definido e inicializado
+        final boolean esAdmin = cbEsAdmin.isChecked();
 
         if (nombre.isEmpty() || email.isEmpty() || password.isEmpty() || area.isEmpty() || cargo.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
@@ -70,6 +74,7 @@ public class Crear_User extends AppCompatActivity {
                     }
                 });
     }
+
     private void guardarInformacionUsuario(String userId, String nombre, String email, String area, String cargo, boolean esAdmin) {
         Map<String, Object> user = new HashMap<>();
         user.put("nombre", nombre);
@@ -87,6 +92,7 @@ public class Crear_User extends AppCompatActivity {
                     Toast.makeText(Crear_User.this, "Error al guardar información del usuario: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
     private void limpiarCampos() {
         etNombre.setText("");
         etEmail.setText("");

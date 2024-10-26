@@ -1,6 +1,8 @@
 package com.example.gemerador.login;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -16,10 +18,12 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.gemerador.Admin.AdminMenu;
 import com.example.gemerador.Inicio_User.Inicio_User;
+import com.example.gemerador.Inicio_User.Usuario;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Nuevo_Registro.Nuevo_Registro;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,18 +31,21 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class Login extends AppCompatActivity {
-    private EditText editTextUsuario,editTextContrasena;
-    private Button buttonLogin,buttonRegister;
+    private static final String TAG = "LoginActivity";
+    private EditText editTextUsuario, editTextContrasena;
+    private Button buttonLogin, buttonRegister;
     private TextView textViewOlvidoContrasena;
     private ImageView backButton;
     private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         //Inicializar Firebase Auth
-        mAuth=FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference("Usuarios");
         //window set up
         setupPopupWindow();
         //Inicializar views
@@ -49,22 +56,33 @@ public class Login extends AppCompatActivity {
         setupToolbar();
     }
     private void iniciarSesion() {
-        String usuario = editTextUsuario.getText().toString().trim();
-        String contrasena = editTextContrasena.getText().toString().trim();
-        if (usuario.isEmpty() || contrasena.isEmpty()) {
+        String email = editTextUsuario.getText().toString().trim();
+        String password = editTextContrasena.getText().toString().trim();
+
+        if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
-        mAuth.signInWithEmailAndPassword(usuario,contrasena)
-                .addOnCompleteListener(this, task->{
+
+        Log.d(TAG, "Intentando iniciar sesión con email: " + email); // Nuevo log
+
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Inicio de sesión exitoso, ahora verificamos si es admin
-                        String userId = mAuth.getCurrentUser().getUid();
-                        Log.d("LoginDebug", "Usuario autenticado con UID: " + userId);
-                        verificarAdmin(userId);
-                    }else{
-                        //si el inicio de sesion falla
-                        Toast.makeText(Login.this, "Error en el inicio de sesión"+task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            Log.d(TAG, "Login successful for user: " + user.getEmail());
+                            verificarRolUsuario(user.getUid());
+                        }
+                    } else {
+                        Log.w(TAG, "signInWithEmail:failure", task.getException());
+                        // Mensaje de error más específico
+                        String errorMessage = task.getException() != null ?
+                                task.getException().getMessage() :
+                                "Error desconocido";
+                        Toast.makeText(Login.this,
+                                "Error de autenticación: " + errorMessage,
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -106,7 +124,7 @@ public class Login extends AppCompatActivity {
     private void volverAlMain() {
         Intent intent = new Intent(Login.this, MainActivity.class);
         startActivity(intent);
-        finish(); 
+        finish();
     }
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -115,54 +133,55 @@ public class Login extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
     }
-    private void verificarAdmin(String userId) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("usuarios").child(userId);
-        Log.d("LoginDebug", "Verificando admin para userId: " + userId);
-        Log.d("LoginDebug", "Ruta completa: " + userRef.toString());
+    private void verificarRolUsuario(String userId) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Usuarios").child(userId);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d("LoginDebug", "onDataChange llamado");
                 if (dataSnapshot.exists()) {
-                    Log.d("LoginDebug", "DataSnapshot existe");
-                    Log.d("LoginDebug", "Datos del usuario: " + dataSnapshot.getValue());
-                    if (dataSnapshot.hasChild("esAdmin")) {
-                        Boolean esAdmin = dataSnapshot.child("esAdmin").getValue(Boolean.class);
-                        Log.d("LoginDebug", "esAdmin: " + esAdmin);
-                        if (esAdmin != null && esAdmin) {
-                            Log.d("LoginDebug", "Usuario es admin, redirigiendo a AdminMenu");
-                            irAAdminMenu();
-                        } else {
-                            Log.d("LoginDebug", "Usuario no es admin, redirigiendo a actividad de usuario");
-                            irAActividadUsuario();
-                        }
+                    // Obtener el rol del usuario
+                    String role = dataSnapshot.child("role").getValue(String.class);
+                    String nombre = dataSnapshot.child("nombre").getValue(String.class);
+
+                    // Guardar información del usuario en SharedPreferences
+                    guardarDatosUsuario(nombre, role);
+
+                    if ("Administrador".equals(role)) {
+                        irAAdminMenu();
+                    } else if ("Usuario".equals(role)) {
+                        irAInicioUser();
                     } else {
-                        Log.d("LoginDebug", "El nodo 'esAdmin' no existe para este usuario");
-                        irAActividadUsuario();
+                        Toast.makeText(Login.this, "Rol de usuario no válido", Toast.LENGTH_SHORT).show();
+                        mAuth.signOut();
                     }
-                } else {
-                    Log.d("LoginDebug", "DataSnapshot no existe, redirigiendo a actividad de usuario");
-                    irAActividadUsuario();
                 }
             }
+
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e("LoginDebug", "Error al verificar rol de usuario: " + databaseError.getMessage());
-                Log.e("LoginDebug", "Código de error: " + databaseError.getCode());
-                Log.e("LoginDebug", "Detalles: " + databaseError.getDetails());
-                Toast.makeText(Login.this, "Error al verificar rol de usuario: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
-                irAActividadUsuario();
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(Login.this, "Error al verificar usuario", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error: " + error.getMessage());
             }
         });
     }
+    private void guardarDatosUsuario(String nombre, String role) {
+        SharedPreferences prefs = getSharedPreferences("UserData", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("nombre", nombre);
+        editor.putString("role", role);
+        editor.apply();
+    }
+
     private void irAAdminMenu() {
-        // Aquí puedes mostrar un menú o ir a una actividad específica para administradores
         Intent intent = new Intent(Login.this, AdminMenu.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
-    private void irAActividadUsuario() {
+
+    private void irAInicioUser() {
         Intent intent = new Intent(Login.this, Inicio_User.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

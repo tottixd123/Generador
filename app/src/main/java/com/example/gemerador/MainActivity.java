@@ -2,7 +2,6 @@ package com.example.gemerador;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
@@ -24,133 +23,111 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final int LOGIN_REQUEST_CODE = 1;
+    private static final String TAG = "MainActivity";
     private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("MainActivity", "onCreate iniciado");
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        Log.d("MainActivity", "setContentView completado");
+        // Then initialize Firebase instances
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+    }
 
-        try {
-            // Inicializar Firebase Auth
-            mAuth = FirebaseAuth.getInstance();
-            Log.d("MainActivity", "Firebase Auth inicializado");
-            // Verificar conexión a Firebase
-            checkFirebaseConnection();
-
-            // Configurar el botón de inicio de registro
-            Button registro = findViewById(R.id.inicio_registro);
-            registro.setOnClickListener(v -> {
-                Intent intent = new Intent(this, Nuevo_Registro.class);
-                startActivity(intent);
-            });
-
-            // Configurar el botón de inicio de sesión
-            Button iniciar = findViewById(R.id.iniciar_sesion);
-            iniciar.setOnClickListener(v -> iniciarSesion());
-
-            // Verificar si el usuario ya está autenticado
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            if (currentUser != null) {
-                // Usuario ya autenticado, verificar si es admin
-                verificarAdmin(currentUser.getUid());
-            }
-        } catch (Exception e) {
-            Log.e("MainActivity", "Error en onCreate", e);
-            Toast.makeText(this, "Error al iniciar la aplicación", Toast.LENGTH_LONG).show();
+    @Override
+    public void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            verificarRolUsuario(currentUser.getUid());
+        } else {
+            setupButtons();
         }
     }
-    private void checkFirebaseConnection() {
-        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-        connectedRef.addValueEventListener(new ValueEventListener() {
+
+    private void setupButtons() {
+        Button registro = findViewById(R.id.inicio_registro);
+        registro.setOnClickListener(v -> startActivity(new Intent(this, Nuevo_Registro.class)));
+
+        Button iniciar = findViewById(R.id.iniciar_sesion);
+        iniciar.setOnClickListener(v -> startActivity(new Intent(this, Login.class)));
+    }
+
+    private void verificarRolUsuario(String userId) {
+        DatabaseReference userRef = mDatabase.child("Usuarios").child(userId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Boolean connected = snapshot.getValue(Boolean.class);
-                if (connected != null && connected) {
-                    Log.d("FirebaseConnection", "Conectado a Firebase");
-                    Toast.makeText(MainActivity.this, "Conectado a la base de datos", Toast.LENGTH_SHORT).show();
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String role = dataSnapshot.child("role").getValue(String.class);
+                    Log.d(TAG, "User role: " + role);
+
+                    if ("Administrador".equals(role)) {
+                        Log.d(TAG, "Usuario es Administrador, redirigiendo a AdminMenu");
+                        irAAdminMenu();
+                    } else {
+                        Log.d(TAG, "Usuario es normal, redirigiendo a InicioUser");
+                        irAInicioUser();
+                    }
                 } else {
-                    Log.e("FirebaseConnection", "Desconectado de Firebase");
-                    new Handler().postDelayed(() -> {
-                        if (connected == null || !connected) {
-                            Toast.makeText(MainActivity.this, "No hay conexión a la base de datos", Toast.LENGTH_LONG).show();
-                        }
-                    }, 5000);
+                    Log.d(TAG, "No se encontró el usuario, posiblemente nuevo registro");
+                    // Si el usuario está autenticado pero no tiene datos en la base,
+                    // asumimos que es un usuario normal nuevo
+                    crearUsuarioNormal(userId);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("FirebaseConnection", "Error en la conexión: " + error.getMessage());
-                Toast.makeText(MainActivity.this, "Error al conectar con la base de datos: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Error verificando rol: " + error.getMessage());
+                Toast.makeText(MainActivity.this,
+                        "Error al verificar credenciales",
+                        Toast.LENGTH_SHORT).show();
+                mAuth.signOut();
+                setupButtons();
             }
         });
     }
 
-    private void iniciarSesion() {
-        Intent intent = new Intent(this, Login.class);
-        startActivityForResult(intent, LOGIN_REQUEST_CODE);
-    }
+    private void crearUsuarioNormal(String userId) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            DatabaseReference newUserRef = mDatabase.child("Usuarios").child(userId);
 
-    private void verificarAdmin(String userId) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("usuarios").child(userId);
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    Boolean esAdmin = dataSnapshot.child("esAdmin").getValue(Boolean.class);
-                    if (esAdmin != null && esAdmin) {
-                        // Es admin, ir a AdminMenu
-                        irAAdminMenu();
-                    } else {
-                        // No es admin, ir a la actividad normal de usuario
+            // Crear objeto usuario básico
+            DatabaseReference userRef = newUserRef;
+            userRef.child("email").setValue(user.getEmail());
+            userRef.child("role").setValue("Usuario");
+            userRef.child("nombre").setValue(user.getEmail().split("@")[0])
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG, "Usuario normal creado exitosamente");
                         irAInicioUser();
-                    }
-                } else {
-                    // El usuario no existe en la base de datos
-                    Toast.makeText(MainActivity.this, "Error: Usuario no encontrado", Toast.LENGTH_SHORT).show();
-                    mAuth.signOut();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, "Error al verificar rol de usuario", Toast.LENGTH_SHORT).show();
-            }
-        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error creando usuario: " + e.getMessage());
+                        Toast.makeText(MainActivity.this,
+                                "Error al crear perfil de usuario",
+                                Toast.LENGTH_SHORT).show();
+                        mAuth.signOut();
+                        setupButtons();
+                    });
+        }
     }
 
     private void irAAdminMenu() {
-        Intent intent = new Intent(MainActivity.this, AdminMenu.class);
+        Intent intent = new Intent(this, AdminMenu.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
 
     private void irAInicioUser() {
-        Intent intent = new Intent(MainActivity.this, Inicio_User.class);
+        Intent intent = new Intent(this, Inicio_User.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LOGIN_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                // El inicio de sesión fue exitoso
-                FirebaseUser user = mAuth.getCurrentUser();
-                if (user != null) {
-                    verificarAdmin(user.getUid());
-                }
-            } else if (resultCode == RESULT_CANCELED) {
-                // El usuario canceló el inicio de sesión
-                Toast.makeText(this, "Inicio de sesión cancelado", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 }
