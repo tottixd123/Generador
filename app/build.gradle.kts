@@ -16,6 +16,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -27,6 +28,11 @@ android {
             )
         }
     }
+    packagingOptions {
+        resources.excludes.add("META-INF/NOTICE.md")
+        resources.excludes.add("META-INF/LICENSE.md")
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -37,6 +43,12 @@ android {
 }
 
 dependencies {
+    implementation ("com.sun.mail:android-mail:1.6.7")
+    implementation ("com.sun.mail:android-activation:1.6.7")
+    implementation ("androidx.cardview:cardview:1.0.0")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation ("com.google.android.material:material:1.10.0")
+    implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation (platform("com.google.firebase:firebase-bom:32.2.0"))
     implementation ("com.google.firebase:firebase-analytics")
     implementation ("com.google.firebase:firebase-auth")

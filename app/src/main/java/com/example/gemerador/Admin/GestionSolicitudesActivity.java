@@ -1,5 +1,6 @@
 package com.example.gemerador.Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,6 +28,7 @@ import java.util.List;
 
 public class GestionSolicitudesActivity extends AppCompatActivity implements SolicitudAdapter.OnSolicitudListener {
     private static final String TAG = "GestionSolicitudes";
+    public static final String EXTRA_SOLICITUD = "solicitudes_registro";
     private RecyclerView recyclerView;
     private SolicitudAdapter adapter;
     private List<Solicitud> solicitudes = new ArrayList<>();
@@ -125,51 +127,15 @@ public class GestionSolicitudesActivity extends AppCompatActivity implements Sol
     }
     @Override
     public void onAprobarClick(Solicitud solicitud) {
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(solicitud.getEmail(), "contraseñaTemporal123")
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        String userId = task.getResult().getUser().getUid();
-
-                        // Crear objeto Usuario con los datos de la solicitud
-                        Usuario nuevoUsuario = new Usuario(
-                                solicitud.getNombre(),
-                                solicitud.getEmail(),
-                                "Usuario",  // Cambiado de "user" a "Usuario"
-                                solicitud.getArea(),
-                                solicitud.getCargo()
-                        );
-
-                        // Guardar en la ruta correcta "Usuarios"
-                        FirebaseDatabase.getInstance()
-                                .getReference("Usuarios")
-                                .child(userId)
-                                .setValue(nuevoUsuario)
-                                .addOnSuccessListener(aVoid -> {
-                                    // Actualizar el estado de la solicitud
-                                    mDatabase.child(solicitud.getId())
-                                            .child("estado")
-                                            .setValue("aprobado")
-                                            .addOnSuccessListener(aVoid1 -> {
-                                                Toast.makeText(GestionSolicitudesActivity.this,
-                                                        "Usuario creado y solicitud aprobada",
-                                                        Toast.LENGTH_SHORT).show();
-                                                cargarSolicitudes();
-                                            })
-                                            .addOnFailureListener(e ->
-                                                    Toast.makeText(GestionSolicitudesActivity.this,
-                                                            "Error al actualizar la solicitud",
-                                                            Toast.LENGTH_SHORT).show());
-                                })
-                                .addOnFailureListener(e ->
-                                        Toast.makeText(GestionSolicitudesActivity.this,
-                                                "Error al crear el usuario",
-                                                Toast.LENGTH_SHORT).show());
-                    } else {
-                        Toast.makeText(GestionSolicitudesActivity.this,
-                                "Error al crear la cuenta: " + task.getException().getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+        try {
+            Intent intent = new Intent(GestionSolicitudesActivity.this, AutoCrearUsuario.class);
+            intent.putExtra(EXTRA_SOLICITUD, solicitud);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        } catch (Exception e) {
+            Log.e("GestionSolicitudes", "Error al lanzar AutoCrearUsuarioActivity: " + e.getMessage());
+            Toast.makeText(this, "Error al procesar la solicitud", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
