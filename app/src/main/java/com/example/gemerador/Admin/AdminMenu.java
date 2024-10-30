@@ -49,7 +49,17 @@ public class AdminMenu extends AppCompatActivity {
 
         // Añadir botón para gestionar solicitudes de registro
         findViewById(R.id.btnManageUsers).setOnClickListener(v -> startActivity(new Intent(this, GestionSolicitudesActivity.class)));
-
+        // Boton para modo admin
+        Button userAdminButton = findViewById(R.id.user_admin);
+        if (userAdminButton != null) {
+            userAdminButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(AdminMenu.this, AdminUserManager.class);
+                    startActivity(intent);
+                }
+            });
+        }
     }
     private void cerrarSesion() {
         sessionManager.signOut(() -> {

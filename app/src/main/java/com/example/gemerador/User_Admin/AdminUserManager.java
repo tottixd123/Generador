@@ -25,22 +25,35 @@ public class AdminUserManager extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_user_manager);
+        // Inicializar vistas
         emailEditText = findViewById(R.id.emailEditText);
         promoteButton = findViewById(R.id.promoteButton);
+        // Inicializar Firebase
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        promoteButton.setOnClickListener(new View.OnClickListener() {
-           @Override
-            public void onClick(View v) {
-                String email = emailEditText.getText().toString().trim();
-                if (!email.isEmpty()) {
-                    promoteUserToAdmin(email);
-                }else {
-                    Toast.makeText(AdminUserManager.this,"Por favor, ingrese un email",Toast.LENGTH_SHORT).show();
+        // Configurar el botón de promoción
+        if (promoteButton != null) {
+            promoteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String email = emailEditText.getText().toString().trim();
+                    if (!email.isEmpty()) {
+                        promoteUserToAdmin(email);
+                    } else {
+                        Toast.makeText(AdminUserManager.this,
+                                "Por favor, ingrese un email",
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        });
+            });
+        }
+        // Configurar el botón de volver
+        Button backButton = findViewById(R.id.backButton);
+        if (backButton != null) {
+            backButton.setOnClickListener(v -> finish());
+        }
     }
+
     private void promoteUserToAdmin(final String email) {
         mDatabase.child("usuarios").orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

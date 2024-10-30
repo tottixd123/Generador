@@ -17,6 +17,12 @@
         android:theme="@style/Theme.Gemerador"
         tools:targetApi="31">
         <activity
+            android:name=".Crear_Ti.TicketDetail"
+            android:exported="false" />
+        <activity
+            android:name=".Adapter.TicketAdapter"
+            android:exported="false" />
+        <activity
             android:name=".Admin.AutoCrearUsuario"
             android:exported="false"
             android:parentActivityName=".Admin.GestionSolicitudesActivity" />

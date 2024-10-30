@@ -3,15 +3,40 @@ package com.example.gemerador.Data_base;
 public class Ticket {
     private String ticketNumber;
 
-    public Ticket(String ticketNumber, String problemSpinner, String area_problema, String detalle, String imagen, String id) {
+    public Ticket(String ticketNumber, String problemSpinner, String area_problema, String detalle, String imagen, String id, String createdBy, String creationDate, String userId) {
         this.ticketNumber = ticketNumber;
         this.problemSpinner = problemSpinner;
         this.area_problema = area_problema;
         this.detalle = detalle;
         this.imagen = imagen;
         this.id = id;
+        this.createdBy=createdBy;
+        this.creationDate = creationDate;
+        this.userId = userId;
+    }
+    public String getCreatedBy() {
+        return createdBy;
     }
 
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(String creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
     private String problemSpinner;
 
     public String getArea_problema() {
@@ -66,5 +91,7 @@ public class Ticket {
     private String detalle;
     private String imagen;
     private String id;
-
+    private String createdBy; // Usuario que creó el ticket
+    private String creationDate; // Fecha de creación
+    private String userId; // ID del usuario que creó el ticket
 }
