@@ -126,6 +126,13 @@
                 android:layout_marginBottom="8dp"
                 android:text="Adjunte una fotografía de la falla"
                 android:textSize="14sp" />
+
+            <Spinner
+                android:id="@+id/prioritySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" />
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

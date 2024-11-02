@@ -8,20 +8,15 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.gemerador.Gestion.GestionTickets;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Models.Solicitud;
 import com.example.gemerador.R;
 import com.example.gemerador.User_Admin.AdminUserManager;
-import com.example.gemerador.login.Login;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
 
 import java.util.List;
 
@@ -56,6 +51,17 @@ public class AdminMenu extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(AdminMenu.this, AdminUserManager.class);
+                    startActivity(intent);
+                }
+            });
+        }
+        //Boton para gestionar los tickets
+        Button gestion_tickets =findViewById(R.id.gestion_tickets);
+        if (gestion_tickets !=null){
+            gestion_tickets.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   Intent intent =new Intent(AdminMenu.this, GestionTickets.class);
                     startActivity(intent);
                 }
             });

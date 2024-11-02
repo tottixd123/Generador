@@ -14,10 +14,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.R;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -39,6 +43,7 @@ public class Crear_nuevo_ti extends AppCompatActivity {
     private ImageView selectedImageView;
     private Uri selectedImageUri;
     private int ticketCounter = 0;
+    private Spinner prioritySpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,12 @@ public class Crear_nuevo_ti extends AppCompatActivity {
                 R.array.area_options, android.R.layout.simple_spinner_item);
         areaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         areaSpinner.setAdapter(areaAdapter);
+
+        // Configurar el Spinner de prioridad
+        ArrayAdapter<CharSequence> priorityAdapter = ArrayAdapter.createFromResource(this,
+                R.array.priority_options, android.R.layout.simple_spinner_item);
+        priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        prioritySpinner.setAdapter(priorityAdapter);
     }
 
     private void initializeViews() {
@@ -72,6 +83,8 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         selectImageButton = findViewById(R.id.selectImageButton);
         sendTicketButton = findViewById(R.id.sendTicketButton);
         selectedImageView = findViewById(R.id.selectedImageView);
+        prioritySpinner = findViewById(R.id.prioritySpinner);
+
     }
 
     private void setupListeners() {
@@ -103,13 +116,12 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         String problem = problemSpinner.getSelectedItem().toString();
         String area = areaSpinner.getSelectedItem().toString();
         String details = problemDetailEditText.getText().toString();
-
+        String priority = prioritySpinner.getSelectedItem().toString();
         // Verificar que todos los campos estén llenos
         if (problem.isEmpty() || area.isEmpty() || details.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
-
         JSONObject ticketJson = new JSONObject();
         try {
             ticketJson.put("ticketNumber", "Ticket-C" + String.format("%03d", ticketCounter));
@@ -117,6 +129,14 @@ public class Crear_nuevo_ti extends AppCompatActivity {
             ticketJson.put("area_problema", area);
             ticketJson.put("detalle", details);
             ticketJson.put("imagen", selectedImageUri != null ? selectedImageUri.toString() : "");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            ticketJson.put("priority", priority);
+            ticketJson.put("status", Ticket.STATUS_PENDING);
+            ticketJson.put("creationDate", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+                    Locale.getDefault()).format(new Date()));
         } catch (JSONException e) {
             e.printStackTrace();
         }

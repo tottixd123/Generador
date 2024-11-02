@@ -15,55 +15,68 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/ivTicketImage"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:scaleType="centerCrop"
-            android:layout_marginBottom="8dp"/>
-
         <TextView
             android:id="@+id/tvTicketNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#068f41"/>
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/tvCreator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"/>
+            android:layout_marginTop="4dp"/>
 
         <TextView
             android:id="@+id/tvDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"/>
+            android:layout_marginTop="4dp"/>
 
         <TextView
             android:id="@+id/tvProblemType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"/>
+            android:layout_marginTop="4dp"/>
 
         <TextView
             android:id="@+id/tvArea"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"/>
+            android:layout_marginTop="4dp"/>
 
         <TextView
             android:id="@+id/tvDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"/>
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvPriority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/tvAssignedWorker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"/>
+
+        <ImageView
+            android:id="@+id/ivTicketImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"/>
 
     </LinearLayout>
 

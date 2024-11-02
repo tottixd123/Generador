@@ -9,8 +9,8 @@
 
     <LinearLayout
         android:id="@+id/topBar"
-        android:layout_width="410dp"
-        android:layout_height="76dp"
+        android:layout_width="413dp"
+        android:layout_height="86dp"
         android:background="#068f41"
         android:orientation="horizontal"
         android:padding="16dp"

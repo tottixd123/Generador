@@ -11,14 +11,13 @@
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="-81dp"
-        tools:layout_editor_absoluteY="16dp">
+        android:layout_height="match_parent">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Primera sección (header) sin cambios -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="303dp"
@@ -99,6 +98,8 @@
 
                 </androidx.appcompat.widget.Toolbar>
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Sección de formulario -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -128,25 +129,25 @@
                     android:inputType="textEmailAddress"
                     android:textSize="16sp" />
 
-                <EditText
-                    android:id="@+id/etArea"
+                <!-- Reemplazado EditText por Spinner para Área -->
+                <Spinner
+                    android:id="@+id/spinnerArea"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:layout_marginBottom="16dp"
-                    android:padding="12dp"
                     android:background="@drawable/rounded_edittext_password_background"
-                    android:hint="AREA A LA QUE PERTENECE"
-                    android:textSize="16sp" />
+                    android:padding="12dp"
+                    android:popupBackground="#FFFFFF" />
 
-                <EditText
-                    android:id="@+id/etCargo"
+                <!-- Reemplazado EditText por Spinner para Cargo -->
+                <Spinner
+                    android:id="@+id/spinnerCargo"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:layout_marginBottom="16dp"
                     android:background="@drawable/rounded_edittext_password_background"
-                    android:hint="CARGO QUE OCUPA"
                     android:padding="12dp"
-                    android:textSize="16sp" />
+                    android:popupBackground="#FFFFFF" />
 
                 <EditText
                     android:id="@+id/etNumeroContacto"

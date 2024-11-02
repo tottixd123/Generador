@@ -1,8 +1,10 @@
 package com.example.gemerador.Nuevo_Registro;
 
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -13,10 +15,29 @@ import com.example.gemerador.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Nuevo_Registro extends AppCompatActivity {
-    private EditText etNombreCompleto, etEmail, etArea, etCargo, etNumeroContacto;
+    private EditText etNombreCompleto, etEmail, etNumeroContacto;
+    private Spinner spinnerArea, spinnerCargo;
     private Button btnEnviarSolicitud;
     private DatabaseReference mDatabase;
+    // Lista de áreas de la Dirección de Agricultura Cajamarca
+    private final List<String> areas = Arrays.asList(
+            "Direccion Principal de Agricultura",
+            "Dirección de Competitividad Agraria",
+            "Dirección de Estadística e Información Agraria",
+            "Dirección de Infraestructura Agraria",
+            "Recursos Humanos",
+            "Tesoreia",
+            "Contabilidad"
+    );
+    // Lista de cargos
+    private final List<String> cargos = Arrays.asList(
+            "Jefe",
+            "Personal de Apoyo"
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +50,7 @@ public class Nuevo_Registro extends AppCompatActivity {
 
         // Inicializar vistas
         initializeViews();
+        setupSpinners();
 
         // Configurar el botón de regreso
         findViewById(R.id.atras_soli).setOnClickListener(v -> finish());
@@ -40,10 +62,29 @@ public class Nuevo_Registro extends AppCompatActivity {
     private void initializeViews() {
         etNombreCompleto = findViewById(R.id.etNombreCompleto);
         etEmail = findViewById(R.id.etEmail);
-        etArea = findViewById(R.id.etArea);
-        etCargo = findViewById(R.id.etCargo);
+        spinnerArea = findViewById(R.id.spinnerArea);
+        spinnerCargo = findViewById(R.id.spinnerCargo);
         etNumeroContacto = findViewById(R.id.etNumeroContacto);
         btnEnviarSolicitud = findViewById(R.id.btnEnviarSolicitud);
+    }
+    private void setupSpinners() {
+        // Configurar Spinner de Áreas
+        ArrayAdapter<String> areaAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                areas
+        );
+        areaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerArea.setAdapter(areaAdapter);
+
+        // Configurar Spinner de Cargos
+        ArrayAdapter<String> cargoAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                cargos
+        );
+        cargoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCargo.setAdapter(cargoAdapter);
     }
 
     private void enviarSolicitud() {
@@ -53,13 +94,12 @@ public class Nuevo_Registro extends AppCompatActivity {
         // Obtener y validar los datos
         String nombreCompleto = etNombreCompleto.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
-        String area = etArea.getText().toString().trim();
-        String cargo = etCargo.getText().toString().trim();
+        String area = spinnerArea.getSelectedItem().toString();
+        String cargo = spinnerCargo.getSelectedItem().toString();
         String numeroContacto = etNumeroContacto.getText().toString().trim();
 
         // Validación de campos vacíos
-        if (nombreCompleto.isEmpty() || email.isEmpty() || area.isEmpty() ||
-                cargo.isEmpty() || numeroContacto.isEmpty()) {
+        if (nombreCompleto.isEmpty() || email.isEmpty() || numeroContacto.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
             btnEnviarSolicitud.setEnabled(true);
             return;
@@ -94,7 +134,6 @@ public class Nuevo_Registro extends AppCompatActivity {
         String solicitudId = mDatabase.push().getKey();
         if (solicitudId != null) {
             nuevaSolicitud.setId(solicitudId);
-
             // Guardar en Firebase
             mDatabase.child(solicitudId)
                     .setValue(nuevaSolicitud)
@@ -103,7 +142,7 @@ public class Nuevo_Registro extends AppCompatActivity {
                                 "Solicitud de registro enviada exitosamente",
                                 Toast.LENGTH_SHORT).show();
                         limpiarCampos();
-                        finish(); // Cerrar la actividad después de enviar
+                        finish();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(Nuevo_Registro.this,
@@ -117,8 +156,8 @@ public class Nuevo_Registro extends AppCompatActivity {
     private void limpiarCampos() {
         etNombreCompleto.setText("");
         etEmail.setText("");
-        etArea.setText("");
-        etCargo.setText("");
+        spinnerArea.setSelection(0);
+        spinnerCargo.setSelection(0);
         etNumeroContacto.setText("");
         btnEnviarSolicitud.setEnabled(true);
     }
