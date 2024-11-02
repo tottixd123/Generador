@@ -1,6 +1,9 @@
 package com.example.gemerador.Nuevo_Registro;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Nuevo_Registro extends AppCompatActivity {
-    private EditText etNombreCompleto, etEmail, etNumeroContacto;
+    private EditText etNombreCompleto, etEmail, etNumeroContacto, editotroCargo;
     private Spinner spinnerArea, spinnerCargo;
     private Button btnEnviarSolicitud;
     private DatabaseReference mDatabase;
@@ -36,7 +39,8 @@ public class Nuevo_Registro extends AppCompatActivity {
     // Lista de cargos
     private final List<String> cargos = Arrays.asList(
             "Jefe",
-            "Personal de Apoyo"
+            "Personal de Apoyo",
+            "Otro"
     );
 
     @Override
@@ -64,6 +68,7 @@ public class Nuevo_Registro extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         spinnerArea = findViewById(R.id.spinnerArea);
         spinnerCargo = findViewById(R.id.spinnerCargo);
+        editotroCargo=findViewById(R.id.etOtroCargo);
         etNumeroContacto = findViewById(R.id.etNumeroContacto);
         btnEnviarSolicitud = findViewById(R.id.btnEnviarSolicitud);
     }
@@ -85,6 +90,27 @@ public class Nuevo_Registro extends AppCompatActivity {
         );
         cargoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCargo.setAdapter(cargoAdapter);
+
+        spinnerCargo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selecionarOpcion = parent.getItemAtPosition(position).toString();
+
+                // Muestra el campo de texto si "Otro" está seleccionado
+                if (selecionarOpcion.equals("Otro")) {
+                    editotroCargo.setVisibility(View.VISIBLE);
+                } else {
+                    editotroCargo.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // No se requiere implementación
+            }
+        });
+
+
     }
 
     private void enviarSolicitud() {
@@ -96,7 +122,9 @@ public class Nuevo_Registro extends AppCompatActivity {
         String email = etEmail.getText().toString().trim();
         String area = spinnerArea.getSelectedItem().toString();
         String cargo = spinnerCargo.getSelectedItem().toString();
+        String otroCargos = editotroCargo.getText().toString().trim();
         String numeroContacto = etNumeroContacto.getText().toString().trim();
+
 
         // Validación de campos vacíos
         if (nombreCompleto.isEmpty() || email.isEmpty() || numeroContacto.isEmpty()) {
@@ -126,6 +154,7 @@ public class Nuevo_Registro extends AppCompatActivity {
                 email,
                 area,
                 cargo,
+                otroCargos,
                 numeroContacto,
                 "pendiente" // estado inicial
         );
