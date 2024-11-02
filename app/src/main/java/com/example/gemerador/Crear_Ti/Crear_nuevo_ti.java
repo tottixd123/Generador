@@ -1,6 +1,7 @@
 package com.example.gemerador.Crear_Ti;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -12,15 +13,24 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.Inicio_User.Inicio_User;
+import com.example.gemerador.Notificaciones.TicketNotification;
+import com.example.gemerador.Notificaciones.TicketNotificationAdapter;
 import com.example.gemerador.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import okhttp3.Call;
@@ -35,7 +45,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Crear_nuevo_ti extends AppCompatActivity {
+    private static final String PREFS_NAME = "TicketPrefs";
+    private static final String TICKET_COUNTER_KEY = "ticketCounter";
     private static final int PICK_IMAGE_REQUEST = 1;
+    private SharedPreferences sharedPreferences;
     private TextView ticketCounterTextView;
     private Spinner problemSpinner, areaSpinner;
     private EditText problemDetailEditText;
@@ -44,17 +57,25 @@ public class Crear_nuevo_ti extends AppCompatActivity {
     private Uri selectedImageUri;
     private int ticketCounter = 0;
     private Spinner prioritySpinner;
+    private ImageView backButton;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crear_nuevo_ti);
 
+        mAuth = FirebaseAuth.getInstance();
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        // Recuperar el último número de ticket usado
+        ticketCounter = sharedPreferences.getInt(TICKET_COUNTER_KEY, 0);
+
         initializeViews();
         setupListeners();
         updateTicketCounter();
         setupSpinners();
     }
+
     private void setupSpinners() {
         // Configurar el Spinner de problemas
         ArrayAdapter<CharSequence> problemAdapter = ArrayAdapter.createFromResource(this,
@@ -84,12 +105,13 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         sendTicketButton = findViewById(R.id.sendTicketButton);
         selectedImageView = findViewById(R.id.selectedImageView);
         prioritySpinner = findViewById(R.id.prioritySpinner);
-
+        backButton = findViewById(R.id.backButton);
     }
 
     private void setupListeners() {
         selectImageButton.setOnClickListener(v -> openImageChooser());
         sendTicketButton.setOnClickListener(v -> sendTicket());
+        backButton.setOnClickListener(v -> onBackPressed());
     }
 
     private void openImageChooser() {
@@ -112,16 +134,32 @@ public class Crear_nuevo_ti extends AppCompatActivity {
             }
         }
     }
+
     private void sendTicket() {
         String problem = problemSpinner.getSelectedItem().toString();
         String area = areaSpinner.getSelectedItem().toString();
         String details = problemDetailEditText.getText().toString();
         String priority = prioritySpinner.getSelectedItem().toString();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ticketCounter++;
+
+        // Guardar el nuevo valor del contador
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(TICKET_COUNTER_KEY, ticketCounter);
+        editor.apply();
+
         // Verificar que todos los campos estén llenos
         if (problem.isEmpty() || area.isEmpty() || details.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
+
         JSONObject ticketJson = new JSONObject();
         try {
             ticketJson.put("ticketNumber", "Ticket-C" + String.format("%03d", ticketCounter));
@@ -129,10 +167,8 @@ public class Crear_nuevo_ti extends AppCompatActivity {
             ticketJson.put("area_problema", area);
             ticketJson.put("detalle", details);
             ticketJson.put("imagen", selectedImageUri != null ? selectedImageUri.toString() : "");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        try {
+            ticketJson.put("username", currentUser.getDisplayName() != null ?
+                    currentUser.getDisplayName() : currentUser.getEmail());
             ticketJson.put("priority", priority);
             ticketJson.put("status", Ticket.STATUS_PENDING);
             ticketJson.put("creationDate", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
@@ -152,15 +188,16 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this, "Error al enviar el ticket: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this,
+                        "Error al enviar el ticket: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
                     runOnUiThread(() -> {
-                        Toast.makeText(Crear_nuevo_ti.this, "Ticket enviado con éxito", Toast.LENGTH_SHORT).show();
-                        ticketCounter++;
+                        Toast.makeText(Crear_nuevo_ti.this, "Ticket enviado con éxito",
+                                Toast.LENGTH_SHORT).show();
                         updateTicketCounter();
                         Intent intent = new Intent(Crear_nuevo_ti.this, Inicio_User.class);
                         startActivity(intent);
@@ -168,11 +205,13 @@ public class Crear_nuevo_ti extends AppCompatActivity {
                     });
                 } else {
                     String responseBody = response.body().string();
-                    runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this, "Error al enviar el ticket: " + responseBody, Toast.LENGTH_LONG).show());
+                    runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this,
+                            "Error al enviar el ticket: " + responseBody, Toast.LENGTH_LONG).show());
                 }
             }
         });
     }
+
     private void updateTicketCounter() {
         ticketCounterTextView.setText("Ticket-C" + String.format("%03d", ticketCounter));
     }

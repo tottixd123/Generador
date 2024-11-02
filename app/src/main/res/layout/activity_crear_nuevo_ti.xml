@@ -27,26 +27,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="200dp"
-            android:layout_toStartOf="@+id/notificationButton"
-            android:layout_toEndOf="@id/backButton"
+            android:layout_centerInParent="true"
             android:text="Crear Ticket"
             android:textStyle="bold"
-            android:gravity="center"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
-
-        <ImageView
-            android:id="@+id/notificationButton"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/notifiacion"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:padding="12dp"
-            app:tint="#FFFFFF" />
 
     </RelativeLayout>
 
@@ -119,6 +104,17 @@
                 android:layout_marginBottom="20dp"
                 android:background="@drawable/bordes"
                 android:padding="6dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="¿Escoger nivel de Prioridad?"
+                android:layout_marginBottom="8dp"/>
+            <Spinner
+                android:id="@+id/prioritySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -126,13 +122,6 @@
                 android:layout_marginBottom="8dp"
                 android:text="Adjunte una fotografía de la falla"
                 android:textSize="14sp" />
-
-            <Spinner
-                android:id="@+id/prioritySpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

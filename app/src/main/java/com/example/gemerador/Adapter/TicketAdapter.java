@@ -21,10 +21,19 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     private List<Ticket> tickets;
     private List<Ticket> filteredTickets;
     private Context context;
+    private OnTicketAddedListener onTicketAddedListener;
 
     public TicketAdapter(List<Ticket> tickets) {
         this.tickets = tickets;
         this.filteredTickets = new ArrayList<>(tickets);
+    }
+
+    public interface OnTicketAddedListener {
+        void onTicketAdded(Ticket ticket);
+    }
+
+    public void setOnTicketAddedListener(OnTicketAddedListener listener) {
+        this.onTicketAddedListener = listener;
     }
 
     @NonNull
