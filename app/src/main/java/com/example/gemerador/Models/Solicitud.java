@@ -12,6 +12,7 @@ public class Solicitud implements Serializable {
     private String email;
     private String area;
     private String cargo;
+    private String otroCargos;
     private String numeroContacto;
     private String estado;
 
@@ -23,12 +24,13 @@ public class Solicitud implements Serializable {
 
     // Constructor completo
     public Solicitud(String id, String nombre, String email, String area,
-                     String cargo, String numeroContacto, String estado) {
+                     String cargo, String otroCargos,String numeroContacto, String estado) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
         this.area = area;
         this.cargo = cargo;
+        this.otroCargos=otroCargos;
         this.numeroContacto = numeroContacto;
         this.estado = estado != null ? estado : "pendiente";
     }
@@ -72,6 +74,14 @@ public class Solicitud implements Serializable {
 
     public void setCargo(String cargo) {
         this.cargo = cargo != null ? cargo.trim() : null;
+    }
+
+    public String getOtroCargos() {
+        return otroCargos;
+    }
+
+    public void setOtroCargos(String otroCargos) {
+        this.otroCargos = otroCargos;
     }
 
     public String getNumeroContacto() {
