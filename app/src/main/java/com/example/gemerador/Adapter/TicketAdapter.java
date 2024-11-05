@@ -2,6 +2,8 @@ package com.example.gemerador.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,18 +11,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Button;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.gemerador.Crear_Ti.TicketDetail;
 import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder> {
     public interface OnTicketAddedListener {
         void onTicketAdded(Ticket ticket);
     }
+    //arreglar no se ve la imagen del ticket
 
     private OnTicketAddedListener ticketAddedListener;
 
@@ -71,7 +81,12 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         holder.tvProblemType.setText("Problema: " + safeString(ticket.getProblemSpinner(), "No especificado"));
         holder.tvArea.setText("Área: " + safeString(ticket.getArea_problema(), "No especificada"));
         holder.tvDetails.setText("Detalle: " + safeString(ticket.getDetalle(), "Sin detalles"));
-        holder.tvStatus.setText("Estado: " + safeString(ticket.getStatus(), "Pendiente"));
+
+        // Configurar estado y aplicar color
+        String status = safeString(ticket.getStatus(), "Pendiente");
+        holder.tvStatus.setText("Estado: " + status);
+        applyStatusColor(holder.statusContainer, status);
+
         holder.tvPriority.setText("Prioridad: " + safeString(ticket.getPriority(), "Normal"));
 
         String assignedWorker = ticket.getAssignedWorkerName();
@@ -81,20 +96,69 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         // Configurar visibilidad y funcionalidad de los botones según el rol
         configureButtonsForRole(holder, ticket);
 
-        // Cargar imagen si existe
+        // Manejar la imagen del ticket
+        handleTicketImage(holder, ticket);
+
+        // Click listener para ver detalles
+        setupTicketClickListener(holder, ticket);
+    }
+    private void handleTicketImage(@NonNull ViewHolder holder, Ticket ticket) {
         String imageUrl = ticket.getImagen();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             holder.ivTicketImage.setVisibility(View.VISIBLE);
-            Glide.with(context)
-                    .load(imageUrl)
-                    .placeholder(R.drawable.bordes)
-                    .error(R.drawable.bordes)
-                    .into(holder.ivTicketImage);
+
+            // Intentar cargar la imagen con Glide
+            try {
+                Glide.with(context)
+                        .load(imageUrl)
+                        .placeholder(R.drawable.bordes)
+                        .error(R.drawable.bordes)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model,
+                                                        Target<Drawable> target, boolean isFirstResource) {
+                                holder.ivTicketImage.setVisibility(View.GONE);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model,
+                                                           Target<Drawable> target, com.bumptech.glide.load.DataSource dataSource,
+                                                           boolean isFirstResource) {
+                                holder.ivTicketImage.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        })
+                        .into(holder.ivTicketImage);
+            } catch (Exception e) {
+                holder.ivTicketImage.setVisibility(View.GONE);
+            }
         } else {
             holder.ivTicketImage.setVisibility(View.GONE);
         }
+    }
 
-        // Click listener para ver detalles
+    private void applyStatusColor(View container, String status) {
+        int colorResId;
+        switch (status.toLowerCase()) {
+            case "en progreso":
+                colorResId = R.color.status_in_progress;
+                break;
+            case "completado":
+                colorResId = R.color.status_completed;
+                break;
+            case "cancelado":
+                colorResId = R.color.status_cancelled;
+                break;
+            default:
+                colorResId = R.color.status_pending;
+                break;
+        }
+        container.setBackgroundTintList(ColorStateList.valueOf(
+                ContextCompat.getColor(context, colorResId)));
+    }
+
+    private void setupTicketClickListener(@NonNull ViewHolder holder, Ticket ticket) {
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, TicketDetail.class);
             intent.putExtra("ticketNumber", safeString(ticket.getTicketNumber(), ""));
@@ -183,10 +247,12 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
                 tvDetails, tvStatus, tvPriority, tvAssignedWorker;
         ImageView ivTicketImage;
         Button btnUpdateStatus, btnUpdatePriority, btnAssignWorker;
+        View statusContainer; // Añade esta línea
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             // Vistas básicas
+            statusContainer = itemView.findViewById(R.id.statusContainer); // Añade esta línea
             tvTicketNumber = itemView.findViewById(R.id.tvTicketNumber);
             tvCreator = itemView.findViewById(R.id.tvCreator);
             tvDate = itemView.findViewById(R.id.tvDate);

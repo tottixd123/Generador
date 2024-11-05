@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,14 +21,21 @@ import com.example.gemerador.R;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -114,7 +122,8 @@ public class GestionTickets extends AppCompatActivity implements TicketAdapter.T
     }
     private void loadTickets(String status) {
         showLoading(true);
-        Log.d(TAG, "Iniciando carga de tickets con estado: " + status);
+
+        // First load tickets from MockAPI
         Request request = new Request.Builder()
                 .url(API_URL)
                 .get()
@@ -125,55 +134,69 @@ public class GestionTickets extends AppCompatActivity implements TicketAdapter.T
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
                     String responseData = response.body().string();
-                    Log.d(TAG, "Respuesta API recibida: " + responseData);
-                    Log.d(TAG, "Datos recibidos: " + responseData);
                     try {
                         JSONArray jsonArray = new JSONArray(responseData);
-                        List<Ticket> newTickets = new ArrayList<>();
+                        List<Ticket> mockApiTickets = new ArrayList<>();
+
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject jsonTicket = jsonArray.getJSONObject(i);
                             Ticket ticket = parseTicket(jsonTicket);
-                            // Logging para cada ticket
-                            Log.d(TAG, "Ticket parseado - Número: " + ticket.getTicketNumber() +
-                                    ", Estado: " + ticket.getStatus());
-                            // Filtrar por estado
-                            if (currentUserRole.equals("Administrador") ||
-                                    status.equals("all") ||
-                                    ticket.getStatus().equals(status)) {
-                                newTickets.add(ticket);
-                            }
+                            mockApiTickets.add(ticket);
                         }
 
-                        runOnUiThread(() -> {
-                            ticketList.clear();
-                            ticketList.addAll(newTickets);
-                            ticketAdapter.notifyDataSetChanged();
-                            showLoading(false);
-                            // Log del resultado final
-                            Log.d(TAG, "Tickets cargados: " + ticketList.size());
-
-                            // Mostrar mensaje si no hay tickets
-                            if (ticketList.isEmpty()) {
-                                Toast.makeText(GestionTickets.this,
-                                        "No se encontraron tickets para mostrar",
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        // Then sync with Firebase for additional data
+                        syncTicketsWithFirebase(mockApiTickets, status);
 
                     } catch (JSONException e) {
-                        Log.e(TAG, "Error al procesar JSON: " + e.getMessage());
-                        handleError("Error al procesar datos: " + e.getMessage());
+                        handleError("Error processing data: " + e.getMessage());
                     }
-                } else {
-                    Log.e(TAG, "Error en respuesta: " + response.code());
-                    handleError("Error en la respuesta del servidor: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e(TAG, "Error de conexión completo: ", e);
-                handleError("Error de conexión: " + e.getMessage());
+                handleError("Connection error: " + e.getMessage());
+            }
+        });
+    }
+    private void syncTicketsWithFirebase(List<Ticket> mockApiTickets, String status) {
+        DatabaseReference ticketsRef = FirebaseDatabase.getInstance().getReference("tickets");
+
+        ticketsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (Ticket ticket : mockApiTickets) {
+                    DataSnapshot ticketSnapshot = dataSnapshot.child(ticket.getTicketNumber());
+                    if (ticketSnapshot.exists()) {
+                        // Update ticket with Firebase data
+                        String assignedWorkerId = ticketSnapshot.child("assignedWorkerId").getValue(String.class);
+                        String assignedWorkerName = ticketSnapshot.child("assignedWorkerName").getValue(String.class);
+                        String currentStatus = ticketSnapshot.child("status").getValue(String.class);
+
+                        ticket.setAssignedWorkerId(assignedWorkerId);
+                        ticket.setAssignedWorkerName(assignedWorkerName);
+                        if (currentStatus != null) {
+                            ticket.setStatus(currentStatus);
+                        }
+                    }
+                }
+
+                // Filter tickets based on status
+                List<Ticket> filteredTickets = mockApiTickets.stream()
+                        .filter(ticket -> status.equals("all") || ticket.getStatus().equals(status))
+                        .collect(Collectors.toList());
+
+                runOnUiThread(() -> {
+                    ticketList.clear();
+                    ticketList.addAll(filteredTickets);
+                    ticketAdapter.notifyDataSetChanged();
+                    showLoading(false);
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                handleError("Firebase sync error: " + error.getMessage());
             }
         });
     }
@@ -243,42 +266,53 @@ public class GestionTickets extends AppCompatActivity implements TicketAdapter.T
                 .show();
     }
     private void showWorkerAssignmentDialog(final Ticket ticket) {
-        if (ticket == null) return;
+        DatabaseReference workersRef = FirebaseDatabase.getInstance().getReference("workers");
 
-        // Aquí deberías obtener la lista de trabajadores disponibles desde Firebase
-        FirebaseDatabase.getInstance().getReference()
-                .child("workers")
-                .get()
-                .addOnSuccessListener(dataSnapshot -> {
-                    List<String> workerNames = new ArrayList<>();
-                    List<String> workerIds = new ArrayList<>();
+        workersRef.get().addOnSuccessListener(dataSnapshot -> {
+            List<String> workerNames = new ArrayList<>();
+            List<String> workerIds = new ArrayList<>();
 
-                    for (DataSnapshot worker : dataSnapshot.getChildren()) {
-                        workerNames.add(worker.child("name").getValue(String.class));
-                        workerIds.add(worker.getKey());
-                    }
+            for (DataSnapshot worker : dataSnapshot.getChildren()) {
+                String workerName = worker.child("name").getValue(String.class);
+                if (workerName != null) {
+                    workerNames.add(workerName);
+                    workerIds.add(worker.getKey());
+                }
+            }
 
-                    if (workerNames.isEmpty()) {
-                        Toast.makeText(this, "No hay trabajadores disponibles", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+            if (workerNames.isEmpty()) {
+                Toast.makeText(this, "No hay trabajadores disponibles", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                    new AlertDialog.Builder(this)
-                            .setTitle("Asignar Trabajador")
-                            .setItems(workerNames.toArray(new String[0]), (dialog, which) -> {
-                                String selectedWorkerId = workerIds.get(which);
-                                String selectedWorkerName = workerNames.get(which);
+            new AlertDialog.Builder(this)
+                    .setTitle("Asignar Trabajador")
+                    .setItems(workerNames.toArray(new String[0]), (dialog, which) -> {
+                        String selectedWorkerId = workerIds.get(which);
+                        String selectedWorkerName = workerNames.get(which);
 
-                                ticket.assignWorker(selectedWorkerId, selectedWorkerName,
-                                        FirebaseDatabase.getInstance().getReference());
-                                loadTickets(getStatusForTab(tabLayout.getSelectedTabPosition()));
-                            })
-                            .show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error al cargar trabajadores: " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
-                });
+                        // Update in Firebase
+                        DatabaseReference ticketRef = FirebaseDatabase.getInstance()
+                                .getReference("tickets")
+                                .child(ticket.getTicketNumber());
+
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("assignedWorkerId", selectedWorkerId);
+                        updates.put("assignedWorkerName", selectedWorkerName);
+
+                        ticketRef.updateChildren(updates)
+                                .addOnSuccessListener(aVoid -> {
+                                    ticket.setAssignedWorkerId(selectedWorkerId);
+                                    ticket.setAssignedWorkerName(selectedWorkerName);
+                                    ticketAdapter.notifyDataSetChanged();
+                                    Toast.makeText(this, "Trabajador asignado exitosamente",
+                                            Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(this,
+                                        "Error al asignar trabajador", Toast.LENGTH_SHORT).show());
+                    })
+                    .show();
+        });
     }
     private Ticket parseTicket(JSONObject jsonTicket) throws JSONException {
         String ticketNumber = jsonTicket.getString("ticketNumber");

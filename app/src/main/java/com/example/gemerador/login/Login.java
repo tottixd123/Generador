@@ -22,6 +22,7 @@ import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Nuevo_Registro.Nuevo_Registro;
 import com.example.gemerador.R;
+import com.example.gemerador.Trabajador.TrabajadorMenu;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -154,8 +155,7 @@ public class Login extends AppCompatActivity {
                             irAInicioUser();
                             break;
                         case "Trabajador":
-                            // Cambiamos para que vaya a Inicio_User en lugar de GestionTickets
-                            irAInicioUser();
+                            irATrabajadorMenu();
                             break;
                         default:
                             Toast.makeText(Login.this, "Rol de usuario no válido", Toast.LENGTH_SHORT).show();
@@ -192,8 +192,8 @@ public class Login extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
-    private void irAGestionTickets() {
-        Intent intent = new Intent(Login.this, GestionTickets.class);
+    private void irATrabajadorMenu() {
+        Intent intent = new Intent(Login.this, TrabajadorMenu.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

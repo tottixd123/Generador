@@ -1,10 +1,15 @@
 package com.example.gemerador.Crear_Ti;
 
+import static android.opengl.ETC1.encodeImage;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +33,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -54,67 +61,66 @@ public class Crear_nuevo_ti extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
     private SharedPreferences sharedPreferences;
     private TextView ticketCounterTextView;
-    private Spinner problemSpinner, areaSpinner;
+    private Spinner problemSpinner, areaSpinner, prioritySpinner;
     private EditText problemDetailEditText;
     private Button selectImageButton, sendTicketButton;
-    private ImageView selectedImageView;
+    private ImageView selectedImageView, backButton;
     private Uri selectedImageUri;
     private int ticketCounter = 0;
-    private Spinner prioritySpinner;
-    private ImageView backButton;
     private FirebaseAuth mAuth;
+    private boolean isSubmitting = false;
+    private static final int MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
+    private String encodedImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crear_nuevo_ti);
 
+        initializeComponents();
+        setupSpinners();
+        setupListeners();
+    }
+
+    private void initializeComponents() {
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        // Recuperar el último número de ticket usado
         ticketCounter = sharedPreferences.getInt(TICKET_COUNTER_KEY, 0);
 
-        initializeViews();
-        setupListeners();
-        updateTicketCounter();
-        setupSpinners();
-    }
-
-    private void setupSpinners() {
-        // Configurar el Spinner de problemas
-        ArrayAdapter<CharSequence> problemAdapter = ArrayAdapter.createFromResource(this,
-                R.array.problem_options, android.R.layout.simple_spinner_item);
-        problemAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        problemSpinner.setAdapter(problemAdapter);
-
-        // Configurar el Spinner de áreas
-        ArrayAdapter<CharSequence> areaAdapter = ArrayAdapter.createFromResource(this,
-                R.array.area_options, android.R.layout.simple_spinner_item);
-        areaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        areaSpinner.setAdapter(areaAdapter);
-
-        // Configurar el Spinner de prioridad
-        ArrayAdapter<CharSequence> priorityAdapter = ArrayAdapter.createFromResource(this,
-                R.array.priority_options, android.R.layout.simple_spinner_item);
-        priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        prioritySpinner.setAdapter(priorityAdapter);
-    }
-
-    private void initializeViews() {
+        // Initialize views
         ticketCounterTextView = findViewById(R.id.ticketCounterTextView);
         problemSpinner = findViewById(R.id.problemSpinner);
         areaSpinner = findViewById(R.id.areaSpinner);
+        prioritySpinner = findViewById(R.id.prioritySpinner);
         problemDetailEditText = findViewById(R.id.problemDetailEditText);
         selectImageButton = findViewById(R.id.selectImageButton);
         sendTicketButton = findViewById(R.id.sendTicketButton);
         selectedImageView = findViewById(R.id.selectedImageView);
-        prioritySpinner = findViewById(R.id.prioritySpinner);
         backButton = findViewById(R.id.backButton);
+
+        updateTicketCounter();
+    }
+
+    private void setupSpinners() {
+        setupSpinner(problemSpinner, R.array.problem_options);
+        setupSpinner(areaSpinner, R.array.area_options);
+        setupSpinner(prioritySpinner, R.array.priority_options);
+    }
+
+    private void setupSpinner(Spinner spinner, int arrayResourceId) {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                arrayResourceId, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
     }
 
     private void setupListeners() {
         selectImageButton.setOnClickListener(v -> openImageChooser());
-        sendTicketButton.setOnClickListener(v -> sendTicket());
+        sendTicketButton.setOnClickListener(v -> {
+            if (!isSubmitting) {
+                sendTicket();
+            }
+        });
         backButton.setOnClickListener(v -> onBackPressed());
     }
 
@@ -131,80 +137,130 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
             try {
-                selectedImageView.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri));
-                selectedImageView.setVisibility(ImageView.VISIBLE);
+                // Compress and encode the image
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+                bitmap = compressImage(bitmap);
+                encodedImage = encodeImage(bitmap);
+
+                // Display the compressed image
+                selectedImageView.setImageBitmap(bitmap);
+                selectedImageView.setVisibility(View.VISIBLE);
             } catch (IOException e) {
-                e.printStackTrace();
+                showError("Error al cargar la imagen: " + e.getMessage());
             }
         }
+    }
+    private Bitmap compressImage(Bitmap original) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        // Calculate new dimensions while maintaining aspect ratio
+        float ratio = Math.min((float) 800 / width, (float) 800 / height);
+        int newWidth = Math.round(width * ratio);
+        int newHeight = Math.round(height * ratio);
+
+        return Bitmap.createScaledBitmap(original, newWidth, newHeight, true);
+    }
+    private String encodeImage(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+        byte[] imageBytes = baos.toByteArray();
+        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
 
     private void sendTicket() {
-        String problem = problemSpinner.getSelectedItem().toString();
-        String area = areaSpinner.getSelectedItem().toString();
-        String details = problemDetailEditText.getText().toString();
-        String priority = prioritySpinner.getSelectedItem().toString();
-        String ticketNumber = "Ticket-C" + String.format("%03d", ticketCounter);
+        if (!validateInput()) {
+            return;
+        }
+
+        isSubmitting = true;
+        sendTicketButton.setEnabled(false);
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
-            Toast.makeText(this, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show();
+            showError("Error: Usuario no identificado");
+            resetSubmitState();
             return;
         }
 
-        ticketCounter++;
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(TICKET_COUNTER_KEY, ticketCounter);
-        editor.apply();
+        String ticketNumber = "Ticket-C" + String.format("%03d", ticketCounter);
 
-        if (problem.isEmpty() || area.isEmpty() || details.isEmpty()) {
-            Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Obtener la referencia al usuario en Firebase Database
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(currentUser.getUid());
 
-        // Crear el objeto JSON para MockAPI
-        JSONObject ticketJson = createTicketJson(ticketNumber, problem, area, details, priority, currentUser);
-
-        // Enviar a MockAPI
-        sendTicketToMockAPI(ticketJson, new TicketCallback() {
-            @Override
-            public void onSuccess(String ticketId) {
-                // Después de éxito en MockAPI, guardar en Firebase
-                saveTicketReferenceToFirebase(ticketId, ticketJson);
+        userRef.get().addOnCompleteListener(task -> {
+            String userName;
+            if (task.isSuccessful() && task.getResult() != null &&
+                    task.getResult().child("name").getValue(String.class) != null) {
+                userName = task.getResult().child("name").getValue(String.class);
+            } else {
+                // Usar email como fallback, o un ID parcial si no hay email
+                userName = currentUser.getEmail() != null ?
+                        currentUser.getEmail() :
+                        "Usuario " + currentUser.getUid().substring(0, 5);
             }
 
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this,
-                        "Error al enviar el ticket: " + error, Toast.LENGTH_LONG).show());
-            }
+            JSONObject ticketJson = createTicketJson(ticketNumber, currentUser, userName);
+            sendTicketToMockAPI(ticketJson);
         });
     }
 
-    private JSONObject createTicketJson(String ticketNumber, String problem, String area,
-                                        String details, String priority, FirebaseUser currentUser) {
+    private boolean validateInput() {
+        String details = problemDetailEditText.getText().toString().trim();
+
+        if (details.isEmpty()) {
+            showError("Por favor, ingrese los detalles del problema");
+            return false;
+        }
+
+        if (problemSpinner.getSelectedItemPosition() == 0) {
+            showError("Por favor, seleccione un tipo de problema");
+            return false;
+        }
+
+        if (areaSpinner.getSelectedItemPosition() == 0) {
+            showError("Por favor, seleccione un área");
+            return false;
+        }
+
+        return true;
+    }
+
+    private JSONObject createTicketJson(String ticketNumber, FirebaseUser currentUser, String userName) {
         JSONObject ticketJson = new JSONObject();
         try {
             ticketJson.put("ticketNumber", ticketNumber);
-            ticketJson.put("problemSpinner", problem);
-            ticketJson.put("area_problema", area);
-            ticketJson.put("detalle", details);
-            ticketJson.put("imagen", selectedImageUri != null ? selectedImageUri.toString() : "");
-            ticketJson.put("username", currentUser.getDisplayName() != null ?
-                    currentUser.getDisplayName() : currentUser.getEmail());
-            ticketJson.put("priority", priority);
-            ticketJson.put("status", Ticket.STATUS_PENDING);
-            ticketJson.put("creationDate", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
-                    Locale.getDefault()).format(new Date()));
+            ticketJson.put("problemSpinner", problemSpinner.getSelectedItem().toString());
+            ticketJson.put("area_problema", areaSpinner.getSelectedItem().toString());
+            ticketJson.put("detalle", problemDetailEditText.getText().toString().trim());
+            ticketJson.put("imagen", encodedImage != null ? encodedImage : "");
+
+            // Usar el nombre proporcionado
+            ticketJson.put("createdBy", userName);
+            ticketJson.put("userId", currentUser.getUid());
+            ticketJson.put("priority", prioritySpinner.getSelectedItem().toString());
+            ticketJson.put("status", "Pendiente");
+            ticketJson.put("creationDate", getCurrentTimestamp());
+            ticketJson.put("assignedWorkerId", "");
+            ticketJson.put("assignedWorkerName", "");
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return ticketJson;
     }
-    private void sendTicketToMockAPI(JSONObject ticketJson, TicketCallback callback) {
-        OkHttpClient client = new OkHttpClient();
+
+    private void sendTicketToMockAPI(JSONObject ticketJson) {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, ticketJson.toString());
+
         Request request = new Request.Builder()
                 .url("https://66fd14c5c3a184a84d18ff38.mockapi.io/generador")
                 .post(body)
@@ -213,62 +269,57 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                callback.onError(e.getMessage());
+                runOnUiThread(() -> {
+                    showError("Error de conexión: " + e.getMessage());
+                    resetSubmitState();
+                });
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    try {
-                        JSONObject jsonResponse = new JSONObject(responseBody);
-                        String ticketId = jsonResponse.getString("id");
-                        callback.onSuccess(ticketId);
-                    } catch (JSONException e) {
-                        callback.onError("Error parsing response: " + e.getMessage());
-                    }
+                    incrementTicketCounter();
+                    runOnUiThread(() -> {
+                        Toast.makeText(Crear_nuevo_ti.this,
+                                "Ticket creado exitosamente", Toast.LENGTH_SHORT).show();
+                        navigateToHome();
+                    });
                 } else {
-                    callback.onError(response.body().string());
+                    runOnUiThread(() -> {
+                        showError("Error al crear ticket: " + response.message());
+                        resetSubmitState();
+                    });
                 }
             }
         });
     }
-
-    private void saveTicketReferenceToFirebase(String ticketId, JSONObject ticketJson) {
-        DatabaseReference ticketsRef = FirebaseDatabase.getInstance().getReference()
-                .child("tickets")
-                .child(ticketId);
-
-        try {
-            Map<String, Object> ticketMap = new HashMap<>();
-            ticketMap.put("mockApiId", ticketId);
-            ticketMap.put("ticketNumber", ticketJson.getString("ticketNumber"));
-            ticketMap.put("status", ticketJson.getString("status"));
-            ticketMap.put("priority", ticketJson.getString("priority"));
-            ticketMap.put("creationDate", ticketJson.getString("creationDate"));
-            ticketMap.put("assignedWorkerId", "");
-
-            ticketsRef.setValue(ticketMap)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(Crear_nuevo_ti.this,
-                                "Ticket creado exitosamente", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(Crear_nuevo_ti.this, Inicio_User.class);
-                        startActivity(intent);
-                        finish();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(Crear_nuevo_ti.this,
-                                "Error al guardar en Firebase: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show();
-                    });
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    private void incrementTicketCounter() {
+        ticketCounter++;
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(TICKET_COUNTER_KEY, ticketCounter);
+        editor.apply();
     }
 
-    interface TicketCallback {
-        void onSuccess(String ticketId);
-        void onError(String error);
+    private void resetSubmitState() {
+        isSubmitting = false;
+        sendTicketButton.setEnabled(true);
+    }
+
+    private void showError(String message) {
+        runOnUiThread(() -> {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private void navigateToHome() {
+        Intent intent = new Intent(Crear_nuevo_ti.this, Inicio_User.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private String getCurrentTimestamp() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(new Date());
     }
 
     private void updateTicketCounter() {

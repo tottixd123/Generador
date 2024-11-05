@@ -14,53 +14,25 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/textViewTicketNumber"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvTicketTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
 
         <TextView
-            android:id="@+id/textViewProblemDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/textViewStatus"
+            android:id="@+id/tvTicketStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@android:color/holo_blue_dark" />
+            android:textColor="@color/design_default_color_primary"/>
 
-        <Spinner
-            android:id="@+id/spinnerStatus"
+        <TextView
+            android:id="@+id/tvTicketDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:minHeight="48dp" />
+            android:layout_marginTop="8dp"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/buttonUpdate"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:text="Actualizar Estado" />
-
-            <Button
-                android:id="@+id/buttonAddComment"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_weight="1"
-                android:text="Agregar Comentario" />
-        </LinearLayout>
     </LinearLayout>
+
 </com.google.android.material.card.MaterialCardView>

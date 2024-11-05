@@ -55,4 +55,6 @@
     <string name="error_updating_status">Error al actualizar estado: %1$s</string>
     <string name="comment_added">Comentario agregado</string>
     <string name="error_adding_comment">Error al agregar comentario: %1$s</string>
+    <string name="update_status">Actualizar Estado</string>
+    <string name="add_comment">Agregar Comentario</string>
 </resources>
