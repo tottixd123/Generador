@@ -243,6 +243,7 @@
                     android:background="@drawable/admincerrar"
                     android:text="Gestionar Trabajadores"
                     android:textSize="12dp" />
+
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
@@ -251,6 +252,13 @@
                 android:layout_marginEnd="8dp"
                 app:cardCornerRadius="10dp">
 
+                <Button
+                    android:id="@+id/btnListaUser"
+                    android:layout_width="107dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/admincerrar"
+                    android:text="Lista de Usuarios"
+                    android:textSize="12dp" />
             </androidx.cardview.widget.CardView>
 
 
