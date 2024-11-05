@@ -15,6 +15,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,7 +24,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class Perfil_user extends AppCompatActivity {
     private TextView usernameTextView, emailTextView;
     private Switch notificationSwitch;
-    private Button logoutButton;
+    private Button logoutButton, iniciobtn;
     private ImageView bellIcon;
     private FirebaseAuth mAuth;
 
@@ -51,6 +52,7 @@ public class Perfil_user extends AppCompatActivity {
                 logout();
             }
         });
+
 
         bellIcon.setOnClickListener(new View.OnClickListener() {
             @Override
