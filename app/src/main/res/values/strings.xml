@@ -12,7 +12,7 @@
         <item>Tecnología de la Información</item>
         <item>Logística</item>
     </string-array>
-    <string name="app_name">Gemerador</string>
+    <string name="app_name">Generador de Tickets</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -40,4 +40,19 @@
         <item>Media</item>
         <item>Baja</item>
     </string-array>
+    <!-- Estados de tickets -->
+    <string-array name="ticket_status_array">
+        <item>Todos</item>
+        <item>Pendiente</item>
+        <item>En Proceso</item>
+        <item>En Espera</item>
+        <item>Resuelto</item>
+        <item>Cerrado</item>
+    </string-array>
+    <!-- Mensajes para el trabajador -->
+    <string name="error_loading_tickets">Error al cargar tickets: %1$s</string>
+    <string name="status_updated">Estado actualizado correctamente</string>
+    <string name="error_updating_status">Error al actualizar estado: %1$s</string>
+    <string name="comment_added">Comentario agregado</string>
+    <string name="error_adding_comment">Error al agregar comentario: %1$s</string>
 </resources>

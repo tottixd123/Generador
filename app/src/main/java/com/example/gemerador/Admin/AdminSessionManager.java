@@ -56,14 +56,11 @@ public class AdminSessionManager {
     }
 
     public void signOut(OnSignOutCompleteListener listener) {
-        // Primero detener todos los listeners
         stopListening();
-
-        // Luego cerrar sesión
         if (mAuth.getCurrentUser() != null) {
             mAuth.signOut();
+            AdminAuthManager.getInstance().clearAdminVerification();
         }
-
         if (listener != null) {
             listener.onSignOutComplete();
         }

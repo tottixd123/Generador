@@ -7,33 +7,48 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.gemerador.Crear_Ti.TicketDetail;
 import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.R;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder> {
-    private List<Ticket> tickets;
-    private List<Ticket> filteredTickets;
-    private Context context;
-    private OnTicketAddedListener onTicketAddedListener;
-
-    public TicketAdapter(List<Ticket> tickets) {
-        this.tickets = tickets;
-        this.filteredTickets = new ArrayList<>(tickets);
-    }
-
     public interface OnTicketAddedListener {
         void onTicketAdded(Ticket ticket);
     }
 
+    private OnTicketAddedListener ticketAddedListener;
+
     public void setOnTicketAddedListener(OnTicketAddedListener listener) {
-        this.onTicketAddedListener = listener;
+        this.ticketAddedListener = listener;
+    }
+    public interface TicketActionListener {
+        void onTicketAction(Ticket ticket, String action);
+    }
+    private String safeString(String value, String defaultValue) {
+        return value != null ? value : defaultValue;
+    }
+    private static final String TAG = "TicketAdapter";
+    private List<Ticket> tickets;
+    private List<Ticket> filteredTickets;
+    private Context context;
+    private String userRole;
+    private TicketActionListener listener;
+
+    public TicketAdapter(List<Ticket> tickets, String userRole, TicketActionListener listener) {
+        this.tickets = tickets;
+        this.filteredTickets = new ArrayList<>(tickets);
+        this.userRole = userRole;
+        this.listener = listener;
+    }
+    // Constructor simple para compatibilidad
+    public TicketAdapter(List<Ticket> tickets) {
+        this(tickets, "", null);
     }
 
     @NonNull
@@ -49,69 +64,81 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Ticket ticket = filteredTickets.get(position);
 
-        // Información básica del ticket
-        holder.tvTicketNumber.setText("Ticket #" + ticket.getTicketNumber());
-        holder.tvCreator.setText("Creado por: " + ticket.getCreatedBy());
-        holder.tvDate.setText("Fecha: " + ticket.getCreationDate());
-        holder.tvProblemType.setText("Problema: " + ticket.getProblemSpinner());
-        holder.tvArea.setText("Área: " + ticket.getArea_problema());
-        holder.tvDetails.setText("Detalle: " + ticket.getDetalle());
+        // Configurar la información básica
+        holder.tvTicketNumber.setText("Ticket #" + safeString(ticket.getTicketNumber(), "Sin número"));
+        holder.tvCreator.setText("Creado por: " + safeString(ticket.getCreatedBy(), "Usuario desconocido"));
+        holder.tvDate.setText("Fecha: " + safeString(ticket.getCreationDate(), "Fecha no disponible"));
+        holder.tvProblemType.setText("Problema: " + safeString(ticket.getProblemSpinner(), "No especificado"));
+        holder.tvArea.setText("Área: " + safeString(ticket.getArea_problema(), "No especificada"));
+        holder.tvDetails.setText("Detalle: " + safeString(ticket.getDetalle(), "Sin detalles"));
+        holder.tvStatus.setText("Estado: " + safeString(ticket.getStatus(), "Pendiente"));
+        holder.tvPriority.setText("Prioridad: " + safeString(ticket.getPriority(), "Normal"));
 
-        // Estado del ticket
-        if (holder.tvStatus != null) {
-            holder.tvStatus.setText("Estado: " + ticket.getStatus());
+        String assignedWorker = ticket.getAssignedWorkerName();
+        holder.tvAssignedWorker.setText("Asignado a: " +
+                (assignedWorker != null && !assignedWorker.isEmpty() ? assignedWorker : "Sin asignar"));
 
-            // Cambiar color según estado
-            int statusColor;
-            switch (ticket.getStatus()) {
-                case Ticket.STATUS_IN_PROGRESS:
-                    statusColor = context.getResources().getColor(R.color.status_in_progress);
-                    break;
-                case Ticket.STATUS_COMPLETED:
-                    statusColor = context.getResources().getColor(R.color.status_completed);
-                    break;
-                default:
-                    statusColor = context.getResources().getColor(R.color.status_pending);
-            }
-            holder.tvStatus.setTextColor(statusColor);
-        }
-
-        // Prioridad
-        if (holder.tvPriority != null) {
-            holder.tvPriority.setText("Prioridad: " + ticket.getPriority());
-        }
-
-        // Trabajador asignado
-        if (holder.tvAssignedWorker != null) {
-            if (ticket.getAssignedWorkerName() != null && !ticket.getAssignedWorkerName().isEmpty()) {
-                holder.tvAssignedWorker.setText("Asignado a: " + ticket.getAssignedWorkerName());
-                holder.tvAssignedWorker.setVisibility(View.VISIBLE);
-            } else {
-                holder.tvAssignedWorker.setVisibility(View.GONE);
-            }
-        }
+        // Configurar visibilidad y funcionalidad de los botones según el rol
+        configureButtonsForRole(holder, ticket);
 
         // Cargar imagen si existe
-        if (ticket.getImagen() != null && !ticket.getImagen().isEmpty()) {
+        String imageUrl = ticket.getImagen();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            holder.ivTicketImage.setVisibility(View.VISIBLE);
             Glide.with(context)
-                    .load(ticket.getImagen())
+                    .load(imageUrl)
                     .placeholder(R.drawable.bordes)
                     .error(R.drawable.bordes)
                     .into(holder.ivTicketImage);
+        } else {
+            holder.ivTicketImage.setVisibility(View.GONE);
         }
 
         // Click listener para ver detalles
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, TicketDetail.class);
-            intent.putExtra("ticketNumber", ticket.getTicketNumber());
-            intent.putExtra("creador", ticket.getCreatedBy());
-            intent.putExtra("fecha", ticket.getCreationDate());
-            intent.putExtra("problema", ticket.getProblemSpinner());
-            intent.putExtra("area", ticket.getArea_problema());
-            intent.putExtra("descripcion", ticket.getDetalle());
-            intent.putExtra("imagen", ticket.getImagen());
+            intent.putExtra("ticketNumber", safeString(ticket.getTicketNumber(), ""));
+            intent.putExtra("creador", safeString(ticket.getCreatedBy(), ""));
+            intent.putExtra("fecha", safeString(ticket.getCreationDate(), ""));
+            intent.putExtra("problema", safeString(ticket.getProblemSpinner(), ""));
+            intent.putExtra("area", safeString(ticket.getArea_problema(), ""));
+            intent.putExtra("descripcion", safeString(ticket.getDetalle(), ""));
+            intent.putExtra("imagen", safeString(ticket.getImagen(), ""));
             context.startActivity(intent);
         });
+    }
+    private void configureButtonsForRole(ViewHolder holder, Ticket ticket) {
+        // Configurar botones según el rol
+        if ("Administrador".equals(userRole)) {
+            holder.btnUpdatePriority.setVisibility(View.VISIBLE);
+            holder.btnAssignWorker.setVisibility(View.VISIBLE);
+            holder.btnUpdateStatus.setVisibility(View.VISIBLE);
+
+            holder.btnUpdatePriority.setOnClickListener(v -> {
+                if (listener != null) listener.onTicketAction(ticket, "UPDATE_PRIORITY");
+            });
+
+            holder.btnAssignWorker.setOnClickListener(v -> {
+                if (listener != null) listener.onTicketAction(ticket, "ASSIGN_WORKER");
+            });
+
+            holder.btnUpdateStatus.setOnClickListener(v -> {
+                if (listener != null) listener.onTicketAction(ticket, "UPDATE_STATUS");
+            });
+        } else if ("Trabajador".equals(userRole)) {
+            holder.btnUpdateStatus.setVisibility(View.VISIBLE);
+            holder.btnUpdatePriority.setVisibility(View.GONE);
+            holder.btnAssignWorker.setVisibility(View.GONE);
+
+            holder.btnUpdateStatus.setOnClickListener(v -> {
+                if (listener != null) listener.onTicketAction(ticket, "UPDATE_STATUS");
+            });
+        } else {
+            // Usuario normal
+            holder.btnUpdateStatus.setVisibility(View.GONE);
+            holder.btnUpdatePriority.setVisibility(View.GONE);
+            holder.btnAssignWorker.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -119,7 +146,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         return filteredTickets.size();
     }
 
-    // Filtrar por usuario
+    // Métodos de filtrado
     public void filterByUser(String userId) {
         filteredTickets.clear();
         if (userId == null || userId.isEmpty()) {
@@ -133,23 +160,6 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         }
         notifyDataSetChanged();
     }
-
-    // Filtrar por estado
-    public void filterByStatus(String status) {
-        filteredTickets.clear();
-        if (status == null || status.isEmpty()) {
-            filteredTickets.addAll(tickets);
-        } else {
-            for (Ticket ticket : tickets) {
-                if (ticket.getStatus().equals(status)) {
-                    filteredTickets.add(ticket);
-                }
-            }
-        }
-        notifyDataSetChanged();
-    }
-
-    // Buscar tickets
     public void searchTickets(String query) {
         filteredTickets.clear();
         if (query.isEmpty()) {
@@ -169,9 +179,10 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTicketNumber, tvCreator, tvDate, tvProblemType, tvArea, tvDetails;
-        TextView tvStatus, tvPriority, tvAssignedWorker;
+        TextView tvTicketNumber, tvCreator, tvDate, tvProblemType, tvArea,
+                tvDetails, tvStatus, tvPriority, tvAssignedWorker;
         ImageView ivTicketImage;
+        Button btnUpdateStatus, btnUpdatePriority, btnAssignWorker;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -184,10 +195,15 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
             tvDetails = itemView.findViewById(R.id.tvDetails);
             ivTicketImage = itemView.findViewById(R.id.ivTicketImage);
 
-            // Vistas adicionales para gestión
+            // Vistas de gestión
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvPriority = itemView.findViewById(R.id.tvPriority);
             tvAssignedWorker = itemView.findViewById(R.id.tvAssignedWorker);
+
+            // Botones de acción
+            btnUpdateStatus = itemView.findViewById(R.id.btnUpdateStatus);
+            btnUpdatePriority = itemView.findViewById(R.id.btnUpdatePriority);
+            btnAssignWorker = itemView.findViewById(R.id.btnAssignWorker);
         }
     }
 }

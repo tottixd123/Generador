@@ -75,33 +75,13 @@ public class GestionSolicitudesActivity extends AppCompatActivity implements Sol
 
     private void verificarPermisosYCargarSolicitudes() {
         showLoading(true);
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-
-        if (currentUser == null) {
-            showError("Usuario no autenticado");
-            finish();
-            return;
-        }
-
-        DatabaseReference userRef = FirebaseDatabase.getInstance()
-                .getReference("Usuarios")
-                .child(currentUser.getUid());
-
-        userRef.child("role").get().addOnCompleteListener(task -> {
-            if (!task.isSuccessful()) {
-                showError("Error al verificar permisos: " + task.getException().getMessage());
-                finish();
-                return;
-            }
-
-            String role = task.getResult().getValue(String.class);
-            if (!"Administrador".equals(role)) {
+        AdminAuthManager.getInstance().verifyAdminAccess(isAdmin -> {
+            if (isAdmin) {
+                cargarSolicitudes();
+            } else {
                 showError("No tienes permisos de administrador");
                 finish();
-                return;
             }
-
-            cargarSolicitudes();
         });
     }
 

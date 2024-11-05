@@ -1,10 +1,23 @@
 package com.example.gemerador.Data_base;
 
+import com.google.firebase.database.DatabaseReference;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 public class Ticket {
     // Constantes de estado
     public static final String STATUS_PENDING = "Pendiente";
     public static final String STATUS_IN_PROGRESS = "En Proceso";
     public static final String STATUS_COMPLETED = "Terminado";
+
+    // Constantes de prioridad
+    public static final String PRIORITY_LOW = "Baja";
+    public static final String PRIORITY_NORMAL = "Normal";
+    public static final String PRIORITY_HIGH = "Alta";
 
     // Campos básicos
     private String ticketNumber;
@@ -19,11 +32,12 @@ public class Ticket {
 
     // Campos de gestión
     private String status = STATUS_PENDING;
-    private String priority;
+    private String priority=PRIORITY_NORMAL;
     private String assignedWorkerId;
     private String assignedWorkerName;
     private String lastUpdated;
     private String comments;
+
 
     // Constructor principal
     public Ticket(String ticketNumber, String problemSpinner, String area_problema,
@@ -39,12 +53,102 @@ public class Ticket {
         this.creationDate = creationDate;
         this.userId = userId;
         this.status = STATUS_PENDING;
+        this.priority = PRIORITY_NORMAL;
         this.lastUpdated = creationDate;
     }
+    // Métodos de actualización para Firebase
+    public void updateStatus(String newStatus, String workerId, DatabaseReference dbRef) {
+        if (!isValidStatus(newStatus)) {
+            throw new IllegalArgumentException("Estado no válido: " + newStatus);
+        }
 
-    // Getters y setters para campos básicos
+        this.status = newStatus;
+        this.lastUpdated = getCurrentTimestamp();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("status", newStatus);
+        updates.put("lastUpdated", lastUpdated);
+
+        if (workerId != null) {
+            updates.put("lastModifiedBy", workerId);
+        }
+
+        if (dbRef != null) {
+            dbRef.child("tickets").child(id).updateChildren(updates);
+        }
+    }
+    public void updatePriority(String newPriority, DatabaseReference dbRef) {
+        if (!isValidPriority(newPriority)) {
+            throw new IllegalArgumentException("Prioridad no válida: " + newPriority);
+        }
+
+        this.priority = newPriority;
+        this.lastUpdated = getCurrentTimestamp();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("priority", newPriority);
+        updates.put("lastUpdated", lastUpdated);
+
+        if (dbRef != null) {
+            dbRef.child("tickets").child(id).updateChildren(updates);
+        }
+    }
+    public void assignWorker(String workerId, String workerName, DatabaseReference dbRef) {
+        this.assignedWorkerId = workerId;
+        this.assignedWorkerName = workerName;
+        this.lastUpdated = getCurrentTimestamp();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("assignedWorkerId", workerId);
+        updates.put("assignedWorkerName", workerName);
+        updates.put("lastUpdated", lastUpdated);
+
+        if (dbRef != null) {
+            dbRef.child("tickets").child(id).updateChildren(updates);
+        }
+    }
+
+    public void addComment(String comment, String userId, String userName, DatabaseReference dbRef) {
+        String timestamp = getCurrentTimestamp();
+        String newComment = String.format("[%s] %s: %s\n", timestamp, userName, comment);
+
+        this.comments = (this.comments == null || this.comments.isEmpty())
+                ? newComment
+                : this.comments + newComment;
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("comments", this.comments);
+        updates.put("lastUpdated", timestamp);
+
+        if (dbRef != null) {
+            dbRef.child("tickets").child(id).updateChildren(updates);
+        }
+    }
+    // Métodos de validación
+    private boolean isValidStatus(String status) {
+        return status != null && (
+                status.equals(STATUS_PENDING) ||
+                        status.equals(STATUS_IN_PROGRESS) ||
+                        status.equals(STATUS_COMPLETED)
+        );
+    }
+
+    private boolean isValidPriority(String priority) {
+        return priority != null && (
+                priority.equals(PRIORITY_LOW) ||
+                        priority.equals(PRIORITY_NORMAL) ||
+                        priority.equals(PRIORITY_HIGH)
+        );
+    }
+
+    private String getCurrentTimestamp() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(new Date());
+    }
+
+        // Getters y setters para campos básicos
     public String getTicketNumber() {
-        return ticketNumber;
+        return ticketNumber != null ? ticketNumber : "";
     }
 
     public void setTicketNumber(String ticketNumber) {
@@ -52,7 +156,7 @@ public class Ticket {
     }
 
     public String getProblemSpinner() {
-        return problemSpinner;
+        return problemSpinner != null ? problemSpinner : "";
     }
 
     public void setProblemSpinner(String problemSpinner) {
@@ -162,5 +266,14 @@ public class Ticket {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+    // Métodos de utilidad adicionales
+    public boolean isAssignedTo(String workerId) {
+        return this.assignedWorkerId != null && this.assignedWorkerId.equals(workerId);
+    }
+
+    public boolean canBeModifiedBy(String userId, String userRole) {
+        return "Administrador".equals(userRole) ||
+                (isAssignedTo(userId) && "Trabajador".equals(userRole));
     }
 }

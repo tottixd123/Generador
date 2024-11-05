@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.gemerador.Models.Solicitud;
 import com.example.gemerador.R;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -25,7 +26,9 @@ public class Nuevo_Registro extends AppCompatActivity {
     private EditText etNombreCompleto, etEmail, etNumeroContacto, editotroCargo;
     private Spinner spinnerArea, spinnerCargo;
     private Button btnEnviarSolicitud;
+    private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
+    private boolean isProcessing = false;
     // Lista de áreas de la Dirección de Agricultura Cajamarca
     private final List<String> areas = Arrays.asList(
             "Direccion Principal de Agricultura",
@@ -49,8 +52,11 @@ public class Nuevo_Registro extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_nuevo_registro);
 
-        // Inicializar Firebase Database con la referencia específica
-        mDatabase = FirebaseDatabase.getInstance().getReference("solicitudes_registro");
+        // Inicializar Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+
+        // Inicializar Firebase Database
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("solicitudes_registro");
 
         // Inicializar vistas
         initializeViews();
@@ -114,7 +120,9 @@ public class Nuevo_Registro extends AppCompatActivity {
     }
 
     private void enviarSolicitud() {
-        // Mostrar progreso
+        Log.d("Solicitud", "Iniciando proceso de envío de solicitud");
+        if (isProcessing) return;
+        isProcessing = true;
         btnEnviarSolicitud.setEnabled(false);
 
         // Obtener y validar los datos
@@ -125,61 +133,90 @@ public class Nuevo_Registro extends AppCompatActivity {
         String otroCargos = editotroCargo.getText().toString().trim();
         String numeroContacto = etNumeroContacto.getText().toString().trim();
 
-
-        // Validación de campos vacíos
-        if (nombreCompleto.isEmpty() || email.isEmpty() || numeroContacto.isEmpty()) {
-            Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
-            btnEnviarSolicitud.setEnabled(true);
-            return;
-        }
-
-        // Validar formato de email
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Por favor ingrese un email válido");
-            btnEnviarSolicitud.setEnabled(true);
-            return;
-        }
-
-        // Validar formato de número de contacto (solo números y mínimo 8 dígitos)
-        if (!numeroContacto.matches("\\d{8,}")) {
-            etNumeroContacto.setError("Ingrese un número válido (mínimo 8 dígitos)");
+        // Validación de campos
+        if (!validarCampos(nombreCompleto, email, numeroContacto)) {
+            isProcessing = false;
             btnEnviarSolicitud.setEnabled(true);
             return;
         }
 
         // Crear objeto Solicitud
         Solicitud nuevaSolicitud = new Solicitud(
-                null, // el ID se asignará automáticamente
+                null,
                 nombreCompleto,
                 email,
                 area,
                 cargo,
                 otroCargos,
                 numeroContacto,
-                "pendiente" // estado inicial
+                "pendiente"
         );
 
-        // Generar key única para la solicitud
-        String solicitudId = mDatabase.push().getKey();
+        // Guardar directamente sin autenticación
+        guardarSolicitud(nuevaSolicitud);
+    }
+    private void guardarSolicitud(Solicitud nuevaSolicitud) {
+        Log.d("Solicitud", "Intentando guardar solicitud en Firebase");
+        // Crear una referencia directa a la colección de solicitudes
+        DatabaseReference solicitudesRef = FirebaseDatabase.getInstance()
+                .getReference()
+                .child("solicitudes_registro");
+
+        // Generar una nueva key para la solicitud
+        String solicitudId = solicitudesRef.push().getKey();
+
         if (solicitudId != null) {
             nuevaSolicitud.setId(solicitudId);
-            // Guardar en Firebase
-            mDatabase.child(solicitudId)
+
+            // Intentar guardar la solicitud
+            solicitudesRef.child(solicitudId)
                     .setValue(nuevaSolicitud)
                     .addOnSuccessListener(aVoid -> {
+                        Log.d("Firebase", "Solicitud guardada exitosamente");
                         Toast.makeText(Nuevo_Registro.this,
                                 "Solicitud de registro enviada exitosamente",
                                 Toast.LENGTH_SHORT).show();
                         limpiarCampos();
+                        isProcessing = false;
                         finish();
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(Nuevo_Registro.this,
-                                "Error al enviar la solicitud. Por favor, intente nuevamente",
-                                Toast.LENGTH_LONG).show();
+                        Log.e("Firebase", "Error al guardar solicitud", e);
+                        manejarError("Error al guardar la solicitud: " + e.getMessage());
+                        isProcessing = false;
                         btnEnviarSolicitud.setEnabled(true);
                     });
+        } else {
+            manejarError("Error al generar ID de solicitud");
+            isProcessing = false;
+            btnEnviarSolicitud.setEnabled(true);
         }
+    }
+
+    private boolean validarCampos(String nombreCompleto, String email, String numeroContacto) {
+        if (nombreCompleto.isEmpty() || email.isEmpty() || numeroContacto.isEmpty()) {
+            Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError("Por favor ingrese un email válido");
+            return false;
+        }
+
+        if (!numeroContacto.matches("\\d{8,}")) {
+            etNumeroContacto.setError("Ingrese un número válido (mínimo 8 dígitos)");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void manejarError(String mensaje) {
+        Log.e("Error", mensaje);
+        Toast.makeText(Nuevo_Registro.this, mensaje, Toast.LENGTH_LONG).show();
+        isProcessing = false;
+        btnEnviarSolicitud.setEnabled(true);
     }
 
     private void limpiarCampos() {

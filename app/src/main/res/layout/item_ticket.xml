@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="4dp"
+    android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,69 +13,93 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Información básica del ticket -->
         <TextView
             android:id="@+id/tvTicketNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="16sp"/>
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/tvCreator"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tvDate"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tvProblemType"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tvArea"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tvDetails"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textStyle="bold"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tvPriority"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tvAssignedWorker"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            android:layout_height="wrap_content"/>
 
         <ImageView
             android:id="@+id/ivTicketImage"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="8dp"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop"
+            android:layout_marginTop="8dp"/>
 
+        <!-- Botones de acción -->
+        <LinearLayout
+            android:id="@+id/buttonContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btnUpdateStatus"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Actualizar Estado"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btnUpdatePriority"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Actualizar Prioridad"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btnAssignWorker"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Asignar Trabajador"
+                android:visibility="gone"/>
+        </LinearLayout>
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

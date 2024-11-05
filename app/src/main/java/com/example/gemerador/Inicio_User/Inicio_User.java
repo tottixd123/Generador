@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -24,8 +25,13 @@ import com.example.gemerador.Notificaciones.TicketNotification;
 import com.example.gemerador.Notificaciones.TicketNotificationAdapter;
 import com.example.gemerador.Perfil.Perfil_user;
 import com.example.gemerador.R;
+
+import com.example.gemerador.Trabajador.TrabajadorManagement;
+import com.example.gemerador.Trabajador.TrabajadorService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,6 +63,11 @@ public class Inicio_User extends AppCompatActivity {
     private EditText searchEditText;
     private List<TicketNotification> notifications = new ArrayList<>();
     private TicketNotificationAdapter notificationAdapter;
+    private TrabajadorManagement TrabajadorManagement;
+    private String userRole;
+    private static final String ROLE_WORKER = "Trabajador";
+    private static final String ROLE_USER = "Usuario";
+    private TrabajadorService trabajadorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +76,7 @@ public class Inicio_User extends AppCompatActivity {
         setContentView(R.layout.activity_inicio_user);
         initializeViews();
         setupSharedPreferences();
+        checkUserRoleAndSetup();
         setupRecyclerView();
         setupClickListeners();
         setupSearch();
@@ -84,9 +96,102 @@ public class Inicio_User extends AppCompatActivity {
         notificationsEnabled = sharedPreferences.getBoolean("notificationsEnabled", true);
         updateNotificationIcon();
     }
+    private void checkUserRoleAndSetup() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showError("Usuario no autenticado");
+            finish();
+            return;
+        }
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("Usuarios")
+                .child(currentUser.getUid());
+
+        userRef.child("role").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                userRole = task.getResult().getValue(String.class);
+                setupBasedOnRole();
+            } else {
+                showError("Error al verificar rol: " + task.getException().getMessage());
+            }
+        });
+    }
+    private void setupBasedOnRole() {
+        setupRecyclerView();
+
+        if (ROLE_WORKER.equals(userRole)) {
+            setupWorkerView();
+        } else {
+            setupUserView();
+        }
+    }
+    private void setupWorkerView() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            trabajadorService = new TrabajadorService(currentUser.getUid());
+
+            // Ocultar botón de crear ticket para trabajadores
+            btnCrear.setVisibility(View.GONE);
+
+            // Usar la interfaz correcta OnTicketsLoadedListener
+            trabajadorService.loadAssignedTickets(new TrabajadorService.OnTicketsLoadedListener() {
+                @Override
+                public void onTicketsLoaded(List<Ticket> tickets) {
+                    updateTicketList(tickets);
+                }
+
+                @Override
+                public void onError(String error) {
+                    showError(error);
+                }
+            });
+        }
+    }
+    private void setupUserView() {
+        btnCrear.setVisibility(View.VISIBLE);
+        fetchTicketsFromMockAPI();
+    }
+    private void updateTicketList(List<Ticket> newTickets) {
+        tickets.clear();
+        tickets.addAll(newTickets);
+        adapter.notifyDataSetChanged();
+
+        if (tickets.isEmpty()) {
+            showEmptyState(true);
+        } else {
+            showEmptyState(false);
+        }
+    }
+    private void showEmptyState(boolean show) {
+        // Asumiendo que agregas un TextView para estado vacío
+        TextView emptyStateView = findViewById(R.id.emptyStateView);
+        if (emptyStateView != null) {
+            emptyStateView.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+        recyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
+    private void showError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (trabajadorService != null) {
+            trabajadorService.cleanup();
+        }
+    }
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new TicketAdapter(tickets);
+        // Obtener el rol del usuario de las preferencias
+        String userRole = sharedPreferences.getString("userRole", "");
+        adapter = new TicketAdapter(tickets, userRole, new TicketAdapter.TicketActionListener() {
+            @Override
+            public void onTicketAction(Ticket ticket, String action) {
+                // Manejar las acciones del ticket aquí
+            }
+        });
         recyclerView.setAdapter(adapter);
     }
     private void setupClickListeners() {
@@ -98,26 +203,20 @@ public class Inicio_User extends AppCompatActivity {
     }
     private void initializeNotifications() {
         notifications = new ArrayList<>();
-        loadSavedNotifications(); // Load saved notifications first
+        loadSavedNotifications();
         if (notifications.isEmpty()) {
             loadSampleNotifications();
         }
 
-        // Add observer for new tickets
-        adapter.setOnTicketAddedListener(new TicketAdapter.OnTicketAddedListener() {
-            @Override
-            public void onTicketAdded(Ticket ticket) {
-                // Create notification for new ticket
-                addNotification(
-                        ticket.getTicketNumber(),
-                        "Pendiente",
-                        "Nuevo ticket creado: " + ticket.getProblemSpinner(),
-                        "Alta"
-                );
-            }
+        adapter.setOnTicketAddedListener(ticket -> {
+            addNotification(
+                    ticket.getTicketNumber(),
+                    "Pendiente",
+                    "Nuevo ticket creado: " + ticket.getProblemSpinner(),
+                    "Alta"
+            );
         });
     }
-
     private void showNotificacionesDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_notifications, null);
         RecyclerView notificationRecyclerView = dialogView.findViewById(R.id.notificationRecyclerView);

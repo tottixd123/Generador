@@ -13,6 +13,8 @@ lifecycleViewmodelKtx = "2.8.4"
 firebaseAuth = "23.0.0"
 navigationFragment = "2.7.7"
 navigationUi = "2.7.7"
+junitJupiter = "5.8.1"
+junitJunit = "4.12"
 
 [libraries]
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
@@ -29,6 +31,8 @@ lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-view
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+junit-junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

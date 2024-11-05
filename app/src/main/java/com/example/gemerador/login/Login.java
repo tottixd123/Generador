@@ -17,8 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.gemerador.Admin.AdminMenu;
+import com.example.gemerador.Gestion.GestionTickets;
 import com.example.gemerador.Inicio_User.Inicio_User;
-import com.example.gemerador.Inicio_User.Usuario;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Nuevo_Registro.Nuevo_Registro;
 import com.example.gemerador.R;
@@ -36,11 +36,11 @@ public class Login extends AppCompatActivity {
     private Button buttonLogin, buttonRegister;
     private TextView textViewOlvidoContrasena;
     private ImageView backButton;
-    private FirebaseAuth mAuth;
+    public FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         //Inicializar Firebase Auth
@@ -55,7 +55,7 @@ public class Login extends AppCompatActivity {
         //tooolbar
         setupToolbar();
     }
-    private void iniciarSesion() {
+    public void iniciarSesion() {
         String email = editTextUsuario.getText().toString().trim();
         String password = editTextContrasena.getText().toString().trim();
 
@@ -146,13 +146,20 @@ public class Login extends AppCompatActivity {
                     // Guardar información del usuario en SharedPreferences
                     guardarDatosUsuario(nombre, role);
 
-                    if ("Administrador".equals(role)) {
-                        irAAdminMenu();
-                    } else if ("Usuario".equals(role)) {
-                        irAInicioUser();
-                    } else {
-                        Toast.makeText(Login.this, "Rol de usuario no válido", Toast.LENGTH_SHORT).show();
-                        mAuth.signOut();
+                    switch (role) {
+                        case "Administrador":
+                            irAAdminMenu();
+                            break;
+                        case "Usuario":
+                            irAInicioUser();
+                            break;
+                        case "Trabajador":
+                            // Cambiamos para que vaya a Inicio_User en lugar de GestionTickets
+                            irAInicioUser();
+                            break;
+                        default:
+                            Toast.makeText(Login.this, "Rol de usuario no válido", Toast.LENGTH_SHORT).show();
+                            mAuth.signOut();
                     }
                 }
             }
@@ -181,6 +188,12 @@ public class Login extends AppCompatActivity {
 
     private void irAInicioUser() {
         Intent intent = new Intent(Login.this, Inicio_User.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+    private void irAGestionTickets() {
+        Intent intent = new Intent(Login.this, GestionTickets.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

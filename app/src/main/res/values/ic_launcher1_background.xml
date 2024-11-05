@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher1_background">#FCFCFC</color>
+    <string-array name="specializations">
+        <item>Soporte Técnico</item>
+        <item>Mantenimiento</item>
+        <item>Desarrollo</item>
+        <item>Redes</item>
+        <item>Sistemas</item>
+    </string-array>
 </resources>

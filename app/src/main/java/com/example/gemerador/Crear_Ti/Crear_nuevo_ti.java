@@ -25,13 +25,17 @@ import com.example.gemerador.Notificaciones.TicketNotificationAdapter;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -140,6 +144,7 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         String area = areaSpinner.getSelectedItem().toString();
         String details = problemDetailEditText.getText().toString();
         String priority = prioritySpinner.getSelectedItem().toString();
+        String ticketNumber = "Ticket-C" + String.format("%03d", ticketCounter);
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
@@ -148,21 +153,39 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         }
 
         ticketCounter++;
-
-        // Guardar el nuevo valor del contador
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(TICKET_COUNTER_KEY, ticketCounter);
         editor.apply();
 
-        // Verificar que todos los campos estén llenos
         if (problem.isEmpty() || area.isEmpty() || details.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Crear el objeto JSON para MockAPI
+        JSONObject ticketJson = createTicketJson(ticketNumber, problem, area, details, priority, currentUser);
+
+        // Enviar a MockAPI
+        sendTicketToMockAPI(ticketJson, new TicketCallback() {
+            @Override
+            public void onSuccess(String ticketId) {
+                // Después de éxito en MockAPI, guardar en Firebase
+                saveTicketReferenceToFirebase(ticketId, ticketJson);
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this,
+                        "Error al enviar el ticket: " + error, Toast.LENGTH_LONG).show());
+            }
+        });
+    }
+
+    private JSONObject createTicketJson(String ticketNumber, String problem, String area,
+                                        String details, String priority, FirebaseUser currentUser) {
         JSONObject ticketJson = new JSONObject();
         try {
-            ticketJson.put("ticketNumber", "Ticket-C" + String.format("%03d", ticketCounter));
+            ticketJson.put("ticketNumber", ticketNumber);
             ticketJson.put("problemSpinner", problem);
             ticketJson.put("area_problema", area);
             ticketJson.put("detalle", details);
@@ -176,7 +199,9 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
+        return ticketJson;
+    }
+    private void sendTicketToMockAPI(JSONObject ticketJson, TicketCallback callback) {
         OkHttpClient client = new OkHttpClient();
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, ticketJson.toString());
@@ -188,28 +213,62 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this,
-                        "Error al enviar el ticket: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                callback.onError(e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(Crear_nuevo_ti.this, "Ticket enviado con éxito",
-                                Toast.LENGTH_SHORT).show();
-                        updateTicketCounter();
-                        Intent intent = new Intent(Crear_nuevo_ti.this, Inicio_User.class);
-                        startActivity(intent);
-                        finish();
-                    });
-                } else {
                     String responseBody = response.body().string();
-                    runOnUiThread(() -> Toast.makeText(Crear_nuevo_ti.this,
-                            "Error al enviar el ticket: " + responseBody, Toast.LENGTH_LONG).show());
+                    try {
+                        JSONObject jsonResponse = new JSONObject(responseBody);
+                        String ticketId = jsonResponse.getString("id");
+                        callback.onSuccess(ticketId);
+                    } catch (JSONException e) {
+                        callback.onError("Error parsing response: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(response.body().string());
                 }
             }
         });
+    }
+
+    private void saveTicketReferenceToFirebase(String ticketId, JSONObject ticketJson) {
+        DatabaseReference ticketsRef = FirebaseDatabase.getInstance().getReference()
+                .child("tickets")
+                .child(ticketId);
+
+        try {
+            Map<String, Object> ticketMap = new HashMap<>();
+            ticketMap.put("mockApiId", ticketId);
+            ticketMap.put("ticketNumber", ticketJson.getString("ticketNumber"));
+            ticketMap.put("status", ticketJson.getString("status"));
+            ticketMap.put("priority", ticketJson.getString("priority"));
+            ticketMap.put("creationDate", ticketJson.getString("creationDate"));
+            ticketMap.put("assignedWorkerId", "");
+
+            ticketsRef.setValue(ticketMap)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(Crear_nuevo_ti.this,
+                                "Ticket creado exitosamente", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(Crear_nuevo_ti.this, Inicio_User.class);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(Crear_nuevo_ti.this,
+                                "Error al guardar en Firebase: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    interface TicketCallback {
+        void onSuccess(String ticketId);
+        void onError(String error);
     }
 
     private void updateTicketCounter() {
