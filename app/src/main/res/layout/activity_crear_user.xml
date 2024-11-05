@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -8,95 +8,155 @@
     android:padding="16dp"
     tools:context=".Admin.Crear_User">
 
-    <TextView
-        android:id="@+id/tvTitulo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Crear Nueva Cuenta de Usuario"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"/>
 
-    <EditText
-        android:id="@+id/etNombre"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Nombre completo"
-        android:inputType="textPersonName"
-        app:layout_constraintTop_toBottomOf="@id/tvTitulo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/etEmail"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Correo electrónico"
-        android:inputType="textEmailAddress"
-        app:layout_constraintTop_toBottomOf="@id/etNombre"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
 
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Contraseña"
-        android:inputType="textPassword"
-        app:layout_constraintTop_toBottomOf="@id/etEmail"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="206dp"
+            android:layout_height="122dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="28dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/nuevousuariocrear" />
 
-    <EditText
-        android:id="@+id/etArea"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Área"
-        android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/etPassword"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        <TextView
+            android:id="@+id/tvTitulo"
+            android:layout_width="297dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageView6"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="45dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="53dp"
+            android:text="Nueva Cuenta de Usuario"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView6" />
 
-    <EditText
-        android:id="@+id/etCargo"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Cargo"
-        android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/etArea"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        <EditText
+            android:id="@+id/etNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvTitulo"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rounded_edittext_password_background"
+            android:hint="Nombre completo"
+            android:padding="12dp"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitulo"
+            tools:layout_editor_absoluteX="3dp" />
 
-    <Button
-        android:id="@+id/btnCrearCuenta"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="112dp"
-        android:text="Crear Cuenta"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etCargo" />
 
-    <CheckBox
-        android:id="@+id/cbEsAdmin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Crear como administrador"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.622" />
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/etNombre"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rounded_edittext_password_background"
+            android:hint="Correo electrónico"
+            android:padding="12dp"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@+id/etNombre"
+            tools:layout_editor_absoluteX="0dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/etEmail"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rounded_edittext_password_background"
+            android:hint="Contraseña"
+            android:padding="12dp"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@+id/etEmail"
+            tools:layout_editor_absoluteX="0dp" />
+
+        <EditText
+            android:id="@+id/etArea"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/etPassword"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rounded_edittext_password_background"
+            android:hint="Área"
+            android:padding="12dp"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@+id/etPassword"
+            tools:layout_editor_absoluteX="3dp" />
+
+
+        <EditText
+            android:id="@+id/etCargo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/etArea"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rounded_edittext_password_background"
+            android:hint="Cargo"
+            android:padding="12dp"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@+id/etArea"
+            tools:layout_editor_absoluteX="-3dp" />
+
+        <CheckBox
+            android:id="@+id/cbEsAdmin"
+            android:layout_width="281dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:text="Crear como administrador"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.163"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/etCargo" />
+
+        <Button
+            android:id="@+id/btnCrearCuenta"
+            android:layout_width="244dp"
+            android:layout_height="53dp"
+            android:layout_below="@+id/cbEsAdmin"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/admincerrar"
+            android:backgroundTint="#068f41"
+            android:text="Crear Cuenta"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cbEsAdmin"
+            app:layout_constraintVertical_bias="0.271" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+</RelativeLayout>

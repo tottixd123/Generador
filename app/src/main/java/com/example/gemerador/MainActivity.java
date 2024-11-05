@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button iniciar = findViewById(R.id.iniciar_sesion);
         iniciar.setOnClickListener(v -> startActivity(new Intent(this, Login.class)));
+        overridePendingTransition(0, 0);
     }
 
     private void verificarRolUsuario(String userId) {
