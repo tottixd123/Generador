@@ -82,6 +82,11 @@ public class Crear_User extends AppCompatActivity {
         user.put("area", area);
         user.put("cargo", cargo);
         user.put("esAdmin", esAdmin);
+        // Añadir el rol según el checkbox
+        user.put("role", esAdmin ? "Admin" : "Usuario");
+        // Añadir estado y fecha de creación
+        user.put("estado", "activo");
+        user.put("fechaCreacion", System.currentTimeMillis());
 
         mDatabase.child(userId).setValue(user)
                 .addOnSuccessListener(aVoid -> {
@@ -89,7 +94,8 @@ public class Crear_User extends AppCompatActivity {
                     limpiarCampos();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(Crear_User.this, "Error al guardar información del usuario: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Crear_User.this, "Error al guardar información del usuario: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
                 });
     }
 

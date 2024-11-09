@@ -5,11 +5,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.gemerador.Gestion.GestionTickets;
+import com.example.gemerador.Gestion.GestionTicketsActivity;
+import com.example.gemerador.Lista.UserListActivity;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Models.Solicitud;
 import com.example.gemerador.R;
@@ -116,10 +115,13 @@ public class AdminMenu extends AppCompatActivity {
                 startActivity(new Intent(this, AdminUserManager.class)));
 
         gestionTickets.setOnClickListener(v ->
-                startActivity(new Intent(this, GestionTickets.class)));
+                startActivity(new Intent(this, GestionTicketsActivity.class)));
 
         btnWorkerManagement.setOnClickListener(v ->
                 startActivity(new Intent(this, TrabajadorManagement.class)));
+        Button btnListaUser = findViewById(R.id.btnListaUser);
+        btnListaUser.setOnClickListener(v ->
+                startActivity(new Intent(this, UserListActivity.class)));
     }
 
     private void cerrarSesion() {

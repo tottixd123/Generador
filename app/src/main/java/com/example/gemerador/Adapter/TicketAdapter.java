@@ -21,10 +21,9 @@ import com.bumptech.glide.request.target.Target;
 import com.example.gemerador.Crear_Ti.TicketDetail;
 import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.R;
+import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder> {
     public interface OnTicketAddedListener {
@@ -58,6 +57,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     }
     // Constructor simple para compatibilidad
     public TicketAdapter(List<Ticket> tickets) {
+
         this(tickets, "", null);
     }
 
@@ -102,6 +102,11 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         // Click listener para ver detalles
         setupTicketClickListener(holder, ticket);
     }
+    public void setTickets(List<Ticket> tickets) {
+        this.tickets = new ArrayList<>(tickets);
+        notifyDataSetChanged();
+    }
+
     private void handleTicketImage(@NonNull ViewHolder holder, Ticket ticket) {
         String imageUrl = ticket.getImagen();
         if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -157,46 +162,51 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         container.setBackgroundTintList(ColorStateList.valueOf(
                 ContextCompat.getColor(context, colorResId)));
     }
-
     private void setupTicketClickListener(@NonNull ViewHolder holder, Ticket ticket) {
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, TicketDetail.class);
             intent.putExtra("ticketNumber", safeString(ticket.getTicketNumber(), ""));
-            intent.putExtra("creador", safeString(ticket.getCreatedBy(), ""));
-            intent.putExtra("fecha", safeString(ticket.getCreationDate(), ""));
-            intent.putExtra("problema", safeString(ticket.getProblemSpinner(), ""));
+            intent.putExtra("creator", safeString(ticket.getCreatedBy(), ""));  // Cambiado de "creador" a "creator"
+            intent.putExtra("date", safeString(ticket.getCreationDate(), ""));  // Cambiado de "fecha" a "date"
+            intent.putExtra("problem", safeString(ticket.getProblemSpinner(), ""));  // Cambiado de "problema" a "problem"
             intent.putExtra("area", safeString(ticket.getArea_problema(), ""));
-            intent.putExtra("descripcion", safeString(ticket.getDetalle(), ""));
+            intent.putExtra("description", safeString(ticket.getDetalle(), ""));  // Cambiado "descripcion" a "description"
             intent.putExtra("imagen", safeString(ticket.getImagen(), ""));
             context.startActivity(intent);
         });
     }
     private void configureButtonsForRole(ViewHolder holder, Ticket ticket) {
-        // Configurar botones según el rol
         if ("Administrador".equals(userRole)) {
+            // Configuración para administradores
+            holder.btnUpdateStatus.setVisibility(View.VISIBLE);
             holder.btnUpdatePriority.setVisibility(View.VISIBLE);
             holder.btnAssignWorker.setVisibility(View.VISIBLE);
-            holder.btnUpdateStatus.setVisibility(View.VISIBLE);
-
-            holder.btnUpdatePriority.setOnClickListener(v -> {
-                if (listener != null) listener.onTicketAction(ticket, "UPDATE_PRIORITY");
-            });
-
-            holder.btnAssignWorker.setOnClickListener(v -> {
-                if (listener != null) listener.onTicketAction(ticket, "ASSIGN_WORKER");
-            });
 
             holder.btnUpdateStatus.setOnClickListener(v -> {
                 if (listener != null) listener.onTicketAction(ticket, "UPDATE_STATUS");
             });
-        } else if ("Trabajador".equals(userRole)) {
+            holder.btnUpdatePriority.setOnClickListener(v -> {
+                if (listener != null) listener.onTicketAction(ticket, "UPDATE_PRIORITY");
+            });
+            holder.btnAssignWorker.setOnClickListener(v -> {
+                if (listener != null) listener.onTicketAction(ticket, "ASSIGN_WORKER");
+            });
+        } else if ("trabajadores".equals(userRole)) {
+            // Configuración para trabajadores
             holder.btnUpdateStatus.setVisibility(View.VISIBLE);
             holder.btnUpdatePriority.setVisibility(View.GONE);
             holder.btnAssignWorker.setVisibility(View.GONE);
 
-            holder.btnUpdateStatus.setOnClickListener(v -> {
-                if (listener != null) listener.onTicketAction(ticket, "UPDATE_STATUS");
-            });
+            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            if (ticket.getAssignedWorkerId() != null &&
+                    ticket.getAssignedWorkerId().equals(currentUserId)) {
+                holder.btnUpdateStatus.setEnabled(true);
+                holder.btnUpdateStatus.setOnClickListener(v -> {
+                    if (listener != null) listener.onTicketAction(ticket, "UPDATE_STATUS");
+                });
+            } else {
+                holder.btnUpdateStatus.setEnabled(false);
+            }
         } else {
             // Usuario normal
             holder.btnUpdateStatus.setVisibility(View.GONE);

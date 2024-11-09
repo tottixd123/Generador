@@ -17,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.gemerador.Admin.AdminMenu;
-import com.example.gemerador.Gestion.GestionTickets;
 import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Nuevo_Registro.Nuevo_Registro;

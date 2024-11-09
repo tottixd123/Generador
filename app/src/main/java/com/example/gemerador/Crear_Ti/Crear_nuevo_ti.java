@@ -1,15 +1,16 @@
 package com.example.gemerador.Crear_Ti;
 
-import static android.opengl.ETC1.encodeImage;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,33 +18,19 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.Inicio_User.Inicio_User;
-import com.example.gemerador.Notificaciones.TicketNotification;
-import com.example.gemerador.Notificaciones.TicketNotificationAdapter;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -51,7 +38,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -78,6 +64,7 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         setContentView(R.layout.activity_crear_nuevo_ti);
 
         initializeComponents();
+        fetchLastTicketNumber();
         setupSpinners();
         setupListeners();
     }
@@ -85,7 +72,6 @@ public class Crear_nuevo_ti extends AppCompatActivity {
     private void initializeComponents() {
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        ticketCounter = sharedPreferences.getInt(TICKET_COUNTER_KEY, 0);
 
         // Initialize views
         ticketCounterTextView = findViewById(R.id.ticketCounterTextView);
@@ -100,18 +86,111 @@ public class Crear_nuevo_ti extends AppCompatActivity {
 
         updateTicketCounter();
     }
+    private void fetchLastTicketNumber() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) return;
 
-    private void setupSpinners() {
-        setupSpinner(problemSpinner, R.array.problem_options);
-        setupSpinner(areaSpinner, R.array.area_options);
-        setupSpinner(prioritySpinner, R.array.priority_options);
+        // Get reference to the tickets in Firebase/MockAPI
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://66fd14c5c3a184a84d18ff38.mockapi.io/generador")
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                // En caso de fallo, usar el valor guardado en SharedPreferences
+                runOnUiThread(() -> {
+                    ticketCounter = sharedPreferences.getInt(TICKET_COUNTER_KEY, 0);
+                    updateTicketCounter();
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    String jsonData = response.body().string();
+                    try {
+                        // Parse the JSON array and find the highest ticket number
+                        org.json.JSONArray tickets = new org.json.JSONArray(jsonData);
+                        int highestNumber = 0;
+
+                        for (int i = 0; i < tickets.length(); i++) {
+                            JSONObject ticket = tickets.getJSONObject(i);
+                            String ticketNumber = ticket.getString("ticketNumber");
+                            if (ticketNumber.startsWith("Ticket-C")) {
+                                try {
+                                    int number = Integer.parseInt(ticketNumber.substring(8)); // Extract number after "Ticket-C"
+                                    highestNumber = Math.max(highestNumber, number);
+                                } catch (NumberFormatException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        // Update ticket counter to be one more than the highest existing number
+                        final int nextNumber = highestNumber + 1;
+                        runOnUiThread(() -> {
+                            ticketCounter = nextNumber;
+                            updateTicketCounter();
+                            // Save to SharedPreferences
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putInt(TICKET_COUNTER_KEY, ticketCounter);
+                            editor.apply();
+                        });
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        // Fallback to SharedPreferences value
+                        runOnUiThread(() -> {
+                            ticketCounter = sharedPreferences.getInt(TICKET_COUNTER_KEY, 0);
+                            updateTicketCounter();
+                        });
+                    }
+                }
+            }
+        });
     }
 
-    private void setupSpinner(Spinner spinner, int arrayResourceId) {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                arrayResourceId, android.R.layout.simple_spinner_item);
+    private void setupSpinners() {
+        setupSpinner(problemSpinner, R.array.problem_options, "Seleccione un problema");
+        setupSpinner(areaSpinner, R.array.area_options, "Seleccione un área");
+        setupSpinner(prioritySpinner, R.array.priority_options, "Seleccione prioridad");
+    }
+
+    private void setupSpinner(Spinner spinner, int arrayResourceId, String hint) {
+        String[] originalArray = getResources().getStringArray(arrayResourceId);
+        String[] arrayWithHint = new String[originalArray.length + 1];
+        arrayWithHint[0] = hint;
+        System.arraycopy(originalArray, 0, arrayWithHint, 1, originalArray.length);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arrayWithHint) {
+            @Override
+            public boolean isEnabled(int position) {
+                return position != 0;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                TextView tv = (TextView) view;
+
+                if (position == 0) {
+                    tv.setTextColor(Color.GRAY);
+                } else {
+                    tv.setTextColor(Color.BLACK);
+                }
+                return view;
+            }
+        };
+
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+        // Establecer "Pendiente" como estado por defecto para el Spinner de prioridad
+        if (arrayResourceId == R.array.priority_options) {
+            spinner.setSelection(1); // Selecciona "Media" por defecto
+        }
     }
 
     private void setupListeners() {
@@ -137,27 +216,48 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
             try {
-                // Compress and encode the image
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-                bitmap = compressImage(bitmap);
-                encodedImage = encodeImage(bitmap);
-
-                // Display the compressed image
-                selectedImageView.setImageBitmap(bitmap);
-                selectedImageView.setVisibility(View.VISIBLE);
+                // Procesar la imagen seleccionada
+                processSelectedImage(selectedImageUri);
             } catch (IOException e) {
-                showError("Error al cargar la imagen: " + e.getMessage());
+                showError("Error al procesar la imagen: " + e.getMessage());
             }
         }
     }
-    private Bitmap compressImage(Bitmap original) {
-        int width = original.getWidth();
-        int height = original.getHeight();
+    //  método para procesar imágenes
+    private void processSelectedImage(Uri imageUri) throws IOException {
+        // Obtener el bitmap original
+        Bitmap originalBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
 
-        // Calculate new dimensions while maintaining aspect ratio
-        float ratio = Math.min((float) 800 / width, (float) 800 / height);
-        int newWidth = Math.round(width * ratio);
-        int newHeight = Math.round(height * ratio);
+        // Comprimir la imagen
+        Bitmap compressedBitmap = compressImage(originalBitmap);
+
+        // Convertir a Base64
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+        byte[] imageBytes = baos.toByteArray();
+
+        // Verificar el tamaño
+        if (imageBytes.length > MAX_IMAGE_SIZE) {
+            showError("La imagen es demasiado grande. Máximo 1MB.");
+            return;
+        }
+
+        // Guardar la imagen codificada
+        encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+        // Mostrar la vista previa
+        selectedImageView.setImageBitmap(compressedBitmap);
+        selectedImageView.setVisibility(View.VISIBLE);
+    }
+    private Bitmap compressImage(Bitmap original) {
+        int maxDimension = 800; // Máximo 800px en cualquier dimensión
+        float ratio = Math.min(
+                (float) maxDimension / original.getWidth(),
+                (float) maxDimension / original.getHeight()
+        );
+
+        int newWidth = Math.round(original.getWidth() * ratio);
+        int newHeight = Math.round(original.getHeight() * ratio);
 
         return Bitmap.createScaledBitmap(original, newWidth, newHeight, true);
     }
@@ -208,13 +308,6 @@ public class Crear_nuevo_ti extends AppCompatActivity {
     }
 
     private boolean validateInput() {
-        String details = problemDetailEditText.getText().toString().trim();
-
-        if (details.isEmpty()) {
-            showError("Por favor, ingrese los detalles del problema");
-            return false;
-        }
-
         if (problemSpinner.getSelectedItemPosition() == 0) {
             showError("Por favor, seleccione un tipo de problema");
             return false;
@@ -222,6 +315,12 @@ public class Crear_nuevo_ti extends AppCompatActivity {
 
         if (areaSpinner.getSelectedItemPosition() == 0) {
             showError("Por favor, seleccione un área");
+            return false;
+        }
+
+        String details = problemDetailEditText.getText().toString().trim();
+        if (details.isEmpty()) {
+            showError("Por favor, ingrese los detalles del problema");
             return false;
         }
 
