@@ -49,21 +49,28 @@ public class UserModel {
         this.area = area;
     }
 
+    public int getColor() {return color;}
+
+    public void setColor(int color) {this.color = color;}
+
     private String uid;
     private String nombre;
     private String email;
     private String role;
     private String cargo;
     private String area;
+    private int color;
     public UserModel() {
     }
     // Constructor con parámetros
-    public UserModel(String uid, String nombre, String email, String role, String cargo, String area) {
+    public UserModel(String uid, String nombre, String email, String role, String cargo, String area, int color) {
         this.uid = uid != null ? uid : "";
         this.nombre = nombre != null ? nombre : "";
         this.email = email != null ? email : "";
         this.role = role != null ? role : "";
         this.cargo = cargo != null ? cargo : "";
         this.area = area != null ? area : "";
+        this.color = color;
     }
+
 }

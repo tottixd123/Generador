@@ -1,5 +1,6 @@
 package com.example.gemerador.Lista;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +34,7 @@ public class UserListActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private DatabaseReference mDatabase;
     private List<UserModel> userList;
+    int color;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +75,20 @@ public class UserListActivity extends AppCompatActivity {
                         String cargo = snapshot.child("cargo").getValue(String.class);
                         String area = snapshot.child("area").getValue(String.class);
 
-                        UserModel user = new UserModel(uid, nombre, email, role, cargo, area);
+
+                        switch (role) {
+                            case "Administrador":
+                                color = Color.RED;
+                                break;
+                            case "Usuario":
+                                color = Color.BLUE;
+                                break;
+                            case "Trabajador":
+                                color = Color.GREEN;
+                                break;
+                        }
+
+                        UserModel user = new UserModel(uid, nombre, email, role, cargo, area,color);
                         userList.add(user);
 
                         Log.d(TAG, "Usuario cargado: " + nombre);
