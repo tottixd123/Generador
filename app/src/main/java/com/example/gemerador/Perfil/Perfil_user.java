@@ -52,8 +52,7 @@ public class Perfil_user extends AppCompatActivity {
                 logout();
             }
         });
-
-
+        
         bellIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
