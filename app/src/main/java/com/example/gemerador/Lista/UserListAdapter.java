@@ -36,6 +36,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
         holder.textRole.setText("Rol: " + (user.getRole() != null ? user.getRole() : "N/A"));
         holder.textCargo.setText("Cargo: " + (user.getCargo() != null ? user.getCargo() : "N/A"));
         holder.textArea.setText("Área: " + (user.getArea() != null ? user.getArea() : "N/A"));
+        holder.textRole.setTextColor(user.getColor());
     }
     @Override
     public int getItemCount() {
