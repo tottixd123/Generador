@@ -51,6 +51,8 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
     private Spinner spinnerPriority;
     private SwipeRefreshLayout swipeRefreshLayout;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +68,15 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
         setupRecyclerView();
         setupSwipeRefresh();
         loadWorkers();
+        // Inicializar listas
+        ticketList = new ArrayList<>();
+        originalTicketList = new ArrayList<>();
+
+        // Configurar el adapter inmediatamente
+        adapter = new TicketAdapter(ticketList, "Administrador", this);
+        recyclerView.setAdapter(adapter);
+
+        // Cargar tickets iniciales
         loadTickets();
     }
 
@@ -172,7 +183,6 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
-
     private void applyFilters() {
         String selectedWorker = spinnerWorkers.getSelectedItemPosition() > 0 ?
                 workerIds.get(spinnerWorkers.getSelectedItemPosition()) : "";
@@ -199,12 +209,11 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
 
         ticketList.clear();
         ticketList.addAll(filteredList);
+        adapter.setTickets(ticketList); // Actualizar el adapter con la nueva lista
         adapter.notifyDataSetChanged();
     }
-
     private void loadTickets() {
         swipeRefreshLayout.setRefreshing(true);
-        List<Ticket> tickets = new ArrayList<>();
 
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -256,9 +265,11 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                         }
 
                         runOnUiThread(() -> {
+                            ticketList.clear();
+                            ticketList.addAll(tickets);
                             originalTicketList.clear();
                             originalTicketList.addAll(tickets);
-                            applyFilters();
+                            adapter.notifyDataSetChanged();
                             swipeRefreshLayout.setRefreshing(false);
                         });
 
@@ -273,8 +284,6 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                 }
             }
         });
-        adapter.setTickets(ticketList);
-        adapter.notifyDataSetChanged();
     }
 
     @Override

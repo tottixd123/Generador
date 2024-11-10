@@ -29,7 +29,6 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     public interface OnTicketAddedListener {
         void onTicketAdded(Ticket ticket);
     }
-    //arreglar no se ve la imagen del ticket
 
     private OnTicketAddedListener ticketAddedListener;
 
@@ -104,6 +103,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     }
     public void setTickets(List<Ticket> tickets) {
         this.tickets = new ArrayList<>(tickets);
+        this.filteredTickets = new ArrayList<>(tickets);
         notifyDataSetChanged();
     }
 
