@@ -55,6 +55,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         this.userRole = userRole;
         this.listener = listener;
     }
+
     // Constructor simple para compatibilidad
     public TicketAdapter(List<Ticket> tickets) {
 
@@ -251,6 +252,8 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         }
         notifyDataSetChanged();
     }
+
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTicketNumber, tvCreator, tvDate, tvProblemType, tvArea,

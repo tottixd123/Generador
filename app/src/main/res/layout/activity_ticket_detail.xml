@@ -37,57 +37,59 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <ImageView
-                    android:id="@+id/ivTicketDetailImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:adjustViewBounds="true"
-                    android:layout_marginBottom="16dp"/>
-
                 <TextView
                     android:id="@+id/tvTicketDetailNumber"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="#068f41"/>
+                    android:textColor="#068f41"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvTicketDetailCreator"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textSize="18sp"
+                    android:layout_marginBottom="8dp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvTicketDetailDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:textSize="14sp"/>
 
                 <TextView
                     android:id="@+id/tvTicketDetailProblem"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:textSize="16sp"/>
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvTicketDetailArea"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textSize="16sp"/>
+                    android:layout_marginTop="4dp"
+                    android:textSize="14sp"/>
 
                 <TextView
                     android:id="@+id/tvTicketDetailDescription"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="12dp"
                     android:textSize="14sp"/>
+
+                <ImageView
+                    android:id="@+id/ivTicketDetailImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="16dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop" />
 
             </LinearLayout>
 

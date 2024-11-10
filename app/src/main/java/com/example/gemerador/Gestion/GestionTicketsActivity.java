@@ -1,6 +1,7 @@
 package com.example.gemerador.Gestion;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -67,6 +68,7 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
         setupSwipeRefresh();
         loadWorkers();
         loadTickets();
+
     }
 
     private void initializeViews() {
@@ -113,6 +115,7 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                 workerNames.add("Todos los trabajadores");
                 workerIds.add("");
 
+
                 for (DataSnapshot workerSnapshot : dataSnapshot.getChildren()) {
                     String workerId = workerSnapshot.getKey();
                     String workerName = workerSnapshot.child("nombre").getValue(String.class);
@@ -131,6 +134,7 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                 );
                 workerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerWorkers.setAdapter(workerAdapter);
+
             }
 
             @Override
@@ -146,7 +150,7 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
         AdapterView.OnItemSelectedListener filterListener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                applyFilters();
+                applyFilters(); // Filtra al seleccionar cualquier elemento en los spinners
             }
 
             @Override
@@ -155,6 +159,7 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
             }
         };
 
+        // Añadir listeners para los spinners
         spinnerWorkers.setOnItemSelectedListener(filterListener);
         spinnerStatus.setOnItemSelectedListener(filterListener);
         spinnerPriority.setOnItemSelectedListener(filterListener);
@@ -199,12 +204,12 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
 
         ticketList.clear();
         ticketList.addAll(filteredList);
+        adapter.setTickets(ticketList);
         adapter.notifyDataSetChanged();
     }
 
     private void loadTickets() {
         swipeRefreshLayout.setRefreshing(true);
-        List<Ticket> tickets = new ArrayList<>();
 
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -259,6 +264,10 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                             originalTicketList.clear();
                             originalTicketList.addAll(tickets);
                             applyFilters();
+
+                            adapter.setTickets(originalTicketList);
+                            adapter.notifyDataSetChanged();
+
                             swipeRefreshLayout.setRefreshing(false);
                         });
 

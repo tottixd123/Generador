@@ -13,15 +13,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent">
+<!--
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Primera sección (header) sin cambios -->
+            Primera sección (header) sin cambios
 
-            <!-- Sección de formulario -->
+            Sección de formulario
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -138,7 +139,7 @@
                     android:padding="12dp"
                     android:textSize="16sp" />
 
-                <!-- Reemplazado EditText por Spinner para Área -->
+                Reemplazado EditText por Spinner para Área
                 <Spinner
                     android:id="@+id/spinnerArea"
                     android:layout_width="match_parent"
@@ -148,7 +149,7 @@
                     android:padding="12dp"
                     android:popupBackground="#FFFFFF" />
 
-                <!-- Reemplazado EditText por Spinner para Cargo -->
+                 Reemplazado EditText por Spinner para Cargo
                 <Spinner
                     android:id="@+id/spinnerCargo"
                     android:layout_width="match_parent"
@@ -194,5 +195,188 @@
 
             </LinearLayout>
         </LinearLayout>
+        -->
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="730dp">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:background="#068f41"
+                    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+                    <ImageView
+                        android:id="@+id/atras_soli"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="Back button"
+                        android:padding="19dp"
+                        android:rotation="180"
+                        android:src="@drawable/right_arrow"
+                        android:tint="#FFFFFF"
+                        android:translationX="-30dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:gravity="center"
+                        android:text="Solicitar Registro Usuario"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:translationX="-30dp" />
+
+                </androidx.appcompat.widget.Toolbar>
+
+                <ImageView
+                    android:id="@+id/imageView5"
+                    android:layout_width="157dp"
+                    android:layout_height="96dp"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/toolbar"
+                    app:srcCompat="@drawable/gata" />
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="casual"
+                    android:text="Solicitar Registro Usuario"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.498"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="333dp"
+                    android:layout_height="41dp"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Llene los datos y en un plazo no mayor a 48 horas nos comunicaremos con usted"
+                    android:textAlignment="center"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.498"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imageView5" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/abordersolicitudes"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView7">
+
+                    <EditText
+                        android:id="@+id/etNombreCompleto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/rounded_edittext_password_background"
+                        android:hint="NOMBRE COMPLETO"
+                        android:padding="12dp"
+                        android:textSize="16sp" />
+
+
+                    <EditText
+                        android:id="@+id/etEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/rounded_edittext_password_background"
+                        android:hint="Email"
+                        android:inputType="textEmailAddress"
+                        android:padding="12dp"
+                        android:textSize="16sp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerArea"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/rounded_edittext_password_background"
+                        android:padding="12dp"
+                        android:popupBackground="#FFFFFF" />
+
+
+                    <Spinner
+                        android:id="@+id/spinnerCargo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/rounded_edittext_password_background"
+                        android:padding="12dp"
+                        android:popupBackground="#FFFFFF" />
+
+
+                    <EditText
+                        android:id="@+id/etOtroCargo"
+                        android:layout_width="match_parent"
+                        android:layout_height="74dp"
+                        android:layout_margin="12dp"
+                        android:layout_marginBottom="24dp"
+                        android:background="@drawable/rounded_edittext_password_background"
+                        android:hint="INGRESE EL OTRO CARGO"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:textSize="16sp"
+                        android:visibility="gone" />
+
+
+                    <EditText
+                        android:id="@+id/etNumeroContacto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:layout_marginBottom="24dp"
+                        android:background="@drawable/rounded_edittext_password_background"
+                        android:hint="NUMERO DE CONTACTO"
+                        android:inputType="phone"
+                        android:padding="12dp"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/btnEnviarSolicitud"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:backgroundTint="#068f41"
+                        android:text="ENVIAR SOLICITUD" />
+
+
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+
+        -->
     </ScrollView>
 </RelativeLayout>
