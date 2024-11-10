@@ -323,14 +323,14 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                         updates.put("status", Ticket.STATUS_IN_PROGRESS);
                         updates.put("lastUpdated", getCurrentTimestamp());
 
-                        updateTicketInMockAPI(ticket.getTicketNumber(), updates);
+                        // Usar el ID del ticket en lugar del ticketNumber
+                        updateTicketInMockAPI(ticket.getId(), updates);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 })
                 .show();
     }
-
     private void showUpdateStatusDialog(Ticket ticket) {
         String[] statusOptions = {
                 Ticket.STATUS_PENDING,
@@ -348,14 +348,13 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                         JSONObject updates = new JSONObject();
                         updates.put("status", newStatus);
                         updates.put("lastUpdated", getCurrentTimestamp());
-                        updateTicketInMockAPI(ticket.getTicketNumber(), updates);
+                        updateTicketInMockAPI(ticket.getId(), updates);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 })
                 .show();
     }
-
     private void showUpdatePriorityDialog(Ticket ticket) {
         String[] priorityOptions = {
                 Ticket.PRIORITY_LOW,
@@ -373,30 +372,36 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                         JSONObject updates = new JSONObject();
                         updates.put("priority", newPriority);
                         updates.put("lastUpdated", getCurrentTimestamp());
-                        updateTicketInMockAPI(ticket.getTicketNumber(), updates);
+                        updateTicketInMockAPI(ticket.getId(), updates);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 })
                 .show();
     }
-
-    private void updateTicketInMockAPI(String ticketNumber, JSONObject updates) {
+    private void updateTicketInMockAPI(String ticketId, JSONObject updates) {
         OkHttpClient client = new OkHttpClient();
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, updates.toString());
 
+        // Asegurarse de que la URL tenga el formato correcto
+        String updateUrl = MOCKAPI_URL + "/" + ticketId;
+
         Request request = new Request.Builder()
-                .url(MOCKAPI_URL + "/" + ticketNumber)
+                .url(updateUrl)
                 .put(body)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> Toast.makeText(GestionTicketsActivity.this,
-                        "Error al actualizar ticket: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    Toast.makeText(GestionTicketsActivity.this,
+                            "Error al actualizar ticket: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                    // Recargar tickets para asegurar consistencia
+                    loadTickets();
+                });
             }
 
             @Override
@@ -406,13 +411,21 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                         Toast.makeText(GestionTicketsActivity.this,
                                 "Ticket actualizado exitosamente",
                                 Toast.LENGTH_SHORT).show();
+                        // Recargar tickets para mostrar los cambios
+                        loadTickets();
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        Toast.makeText(GestionTicketsActivity.this,
+                                "Error al actualizar: " + response.code(),
+                                Toast.LENGTH_SHORT).show();
+                        // Recargar tickets para asegurar consistencia
                         loadTickets();
                     });
                 }
             }
         });
     }
-
     private String getCurrentTimestamp() {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 .format(new Date());
