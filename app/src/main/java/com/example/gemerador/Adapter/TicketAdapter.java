@@ -165,11 +165,6 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
             holder.tvAssignedWorker.setText("Sin asignar");
         }
 
-        // Mostrar última actualización si existe
-        if (ticket.getLastUpdated() != null && !ticket.getLastUpdated().isEmpty()) {
-            holder.tvLastUpdated.setVisibility(View.VISIBLE);
-            holder.tvLastUpdated.setText("Última actualización: " + ticket.getLastUpdated());
-        }
     }
     private int getStatusColor(String status) {
         switch (status.toLowerCase()) {
@@ -377,41 +372,9 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         }
         notifyDataSetChanged();
     }
-<<<<<<< HEAD
 
-
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTicketNumber, tvCreator, tvDate, tvProblemType, tvArea,
-                tvDetails, tvStatus, tvPriority, tvAssignedWorker;
-        ImageView ivTicketImage;
-        Button btnUpdateStatus, btnUpdatePriority, btnAssignWorker;
-        View statusContainer; // Añade esta línea
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            // Vistas básicas
-            statusContainer = itemView.findViewById(R.id.statusContainer); // Añade esta línea
-            tvTicketNumber = itemView.findViewById(R.id.tvTicketNumber);
-            tvCreator = itemView.findViewById(R.id.tvCreator);
-            tvDate = itemView.findViewById(R.id.tvDate);
-            tvProblemType = itemView.findViewById(R.id.tvProblemType);
-            tvArea = itemView.findViewById(R.id.tvArea);
-            tvDetails = itemView.findViewById(R.id.tvDetails);
-            ivTicketImage = itemView.findViewById(R.id.ivTicketImage);
-
-            // Vistas de gestión
-            tvStatus = itemView.findViewById(R.id.tvStatus);
-            tvPriority = itemView.findViewById(R.id.tvPriority);
-            tvAssignedWorker = itemView.findViewById(R.id.tvAssignedWorker);
-
-            // Botones de acción
-            btnUpdateStatus = itemView.findViewById(R.id.btnUpdateStatus);
-            btnUpdatePriority = itemView.findViewById(R.id.btnUpdatePriority);
-            btnAssignWorker = itemView.findViewById(R.id.btnAssignWorker);
-=======
     public void filterByUser(String userId) {
-        filteredTickets.clear();
+        filteredTickets.clear();filteredTickets.clear();
         if (userId == null || userId.isEmpty()) {
             filteredTickets.addAll(tickets);
         } else {
@@ -420,8 +383,8 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
                     filteredTickets.add(ticket);
                 }
             }
->>>>>>> master
         }
         notifyDataSetChanged();
     }
+
 }

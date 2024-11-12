@@ -214,11 +214,11 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
 
         ticketList.clear();
         ticketList.addAll(filteredList);
-<<<<<<< HEAD
+
         adapter.setTickets(ticketList);
-=======
+
         adapter.setTickets(ticketList); // Actualizar el adapter con la nueva lista
->>>>>>> master
+
         adapter.notifyDataSetChanged();
     }
     private void loadTickets() {
@@ -278,15 +278,15 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
                             ticketList.addAll(tickets);
                             originalTicketList.clear();
                             originalTicketList.addAll(tickets);
-<<<<<<< HEAD
+
                             applyFilters();
 
                             adapter.setTickets(originalTicketList);
                             adapter.notifyDataSetChanged();
 
-=======
+
                             adapter.notifyDataSetChanged();
->>>>>>> master
+
                             swipeRefreshLayout.setRefreshing(false);
                         });
 
