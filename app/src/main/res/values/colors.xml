@@ -6,11 +6,30 @@
     <color name="celestito">#D3F0D2</color>
     <color name="verdeoscuro">#032100</color>
     <color name="blancooscuro">#DDDFE0</color>
+    <color name="light_gray">#DDDDDD</color>
     <color name="MU" />
     <!-- Colores para estados de tickets -->
     <color name="status_pending">#FFA000</color>    <!-- Amarillo ámbar -->
     <color name="status_in_progress">#1976D2</color><!-- Azul -->
     <color name="status_completed">#43A047</color>  <!-- Verde -->
     <color name="status_cancelled">#D32F2F</color>
+<<<<<<< HEAD
     <color name="modo_noche">#539670</color>
+=======
+    <!-- Colores para texto -->
+    <color name="text_light">#FFFFFF</color>
+    <color name="text_dark">#000000</color>
+    <color name="app_primary">#068f41</color>
+    <!-- Colores para el SwipeRefreshLayout -->
+    <color name="refresh_color_1">#068f41</color>
+    <color name="refresh_color_2">#4CAF50</color>
+    <color name="refresh_color_3">#8BC34A</color>
+    <color name="refresh_color_4">#CDDC39</color>
+
+    <!-- Prioridades -->
+    <color name="priority_urgent">#FF1744</color>
+    <color name="priority_high">#FF5252</color>
+    <color name="priority_normal">#757575</color>
+    <color name="priority_low">#9E9E9E</color>
+>>>>>>> master
 </resources>

@@ -39,6 +39,8 @@ public class TicketNotificationAdapter extends RecyclerView.Adapter<TicketNotifi
     public void onBindViewHolder(ViewHolder holder, int position) {
         TicketNotification notification = notifications.get(position);
 
+        System.out.println("Binding notification: " + notification.getMessage());
+
         holder.ticketNumberText.setText("Ticket: " + notification.getTicketId());
         holder.statusText.setText("Estado: " + notification.getStatus());
         holder.messageText.setText(notification.getMessage());
@@ -125,9 +127,9 @@ public class TicketNotificationAdapter extends RecyclerView.Adapter<TicketNotifi
 
     @Override
     public int getItemCount() {
-        return notifications.size();
+        System.out.println("Notifications count: " + (notifications != null ? notifications.size() : 0));
+        return notifications != null ? notifications.size() : 0;
     }
-
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView ticketNumberText;
         TextView statusText;

@@ -1,4 +1,5 @@
 package com.example.gemerador.Email;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,7 +16,7 @@ import javax.mail.internet.MimeMessage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class JavaMailAPI  {
+public class JavaMailAPI {
     private static final String TAG = "JavaMailAPI";
 
     private final Context context;
@@ -47,6 +48,13 @@ public class JavaMailAPI  {
                 properties.put("mail.smtp.port", EmailConfig.SMTP_PORT);
                 properties.put("mail.smtp.auth", "true");
                 properties.put("mail.smtp.starttls.enable", "true");
+                properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
+                properties.put("mail.smtp.ssl.trust", "*");
+
+                // Configuración específica para Outlook
+                properties.put("mail.smtp.socketFactory.port", EmailConfig.SMTP_PORT);
+                properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+                properties.put("mail.smtp.socketFactory.fallback", "true");
 
                 Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
                     @Override
@@ -54,6 +62,10 @@ public class JavaMailAPI  {
                         return new PasswordAuthentication(EmailConfig.EMAIL_FROM, EmailConfig.EMAIL_PASSWORD);
                     }
                 });
+
+                // Habilitar debugging para ver más detalles en caso de error
+                session.setDebug(true);
+
                 MimeMessage mimeMessage = new MimeMessage(session);
                 mimeMessage.setFrom(new InternetAddress(EmailConfig.EMAIL_FROM));
                 mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
@@ -69,15 +81,15 @@ public class JavaMailAPI  {
                 });
 
             } catch (MessagingException e) {
-                Log.e(TAG, "Error sending email: " + e.getMessage());
+                String errorMessage = e.getMessage();
+                Log.e(TAG, "Error sending email: " + errorMessage);
                 handler.post(() -> {
                     if (listener != null) {
-                        listener.onEmailSent(false, e.getMessage());
+                        listener.onEmailSent(false, errorMessage);
                     }
                 });
             }
         });
-
         executor.shutdown();
     }
 }

@@ -7,7 +7,6 @@ public class TicketNotification {
     private String timestamp;
     private String priority;
     private String username;
-
     public TicketNotification(String ticketId, String status, String message,
                               String timestamp, String priority, String username) {
         this.ticketId = ticketId;
@@ -17,7 +16,6 @@ public class TicketNotification {
         this.priority = priority;
         this.username = username;
     }
-
     // Getters
     public String getTicketId() { return ticketId; }
     public String getStatus() { return status; }

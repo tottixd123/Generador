@@ -6,6 +6,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,6 +15,7 @@ import com.example.gemerador.Adapter.TicketAdapter;
 import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
+import static com.example.gemerador.Trabajador.TrabajadorServiceCallbacks.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,17 +74,21 @@ public class TrabajadorTicketActivity extends AppCompatActivity implements Ticke
     }
 
     private void loadTickets() {
-        trabajadorService.loadAssignedTickets(new TrabajadorService.OnTicketsLoadedListener() {
+        trabajadorService.loadAssignedTickets(new OnTicketsLoadedListener() {
             @Override
             public void onTicketsLoaded(List<Ticket> tickets) {
-                ticketAdapter = new TicketAdapter(tickets, "Trabajador", TrabajadorTicketActivity.this);
-                recyclerView.setAdapter(ticketAdapter);
+                runOnUiThread(() -> {
+                    ticketAdapter = new TicketAdapter(tickets, "Trabajador", TrabajadorTicketActivity.this);
+                    recyclerView.setAdapter(ticketAdapter);
+                });
             }
 
             @Override
             public void onError(String error) {
-                Toast.makeText(TrabajadorTicketActivity.this,
-                        "Error al cargar tickets: " + error, Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    Toast.makeText(TrabajadorTicketActivity.this,
+                            "Error al cargar tickets: " + error, Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
@@ -100,46 +106,88 @@ public class TrabajadorTicketActivity extends AppCompatActivity implements Ticke
     }
 
     private void showUpdateStatusDialog(final Ticket ticket) {
-        // Implementa un AlertDialog para seleccionar el nuevo estado
-        trabajadorService.updateTicketStatus(ticket.getId(), "NuevoEstado", new TrabajadorService.OnOperationCompleteListener() {
-            @Override
-            public void onSuccess() {
-                Toast.makeText(TrabajadorTicketActivity.this,
-                        "Estado actualizado correctamente", Toast.LENGTH_SHORT).show();
-                loadTickets(); // Recargar tickets para mostrar cambios
-            }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Actualizar Estado");
+        String[] estados = {"Pendiente", "En Proceso", "Completado"};
 
-            @Override
-            public void onError(String error) {
-                Toast.makeText(TrabajadorTicketActivity.this,
-                        "Error al actualizar estado: " + error, Toast.LENGTH_SHORT).show();
-            }
+        builder.setItems(estados, (dialog, which) -> {
+            String nuevoEstado = estados[which];
+            actualizarEstadoTicket(ticket, nuevoEstado);
         });
+
+        builder.create().show();
+    }
+
+    private void actualizarEstadoTicket(Ticket ticket, String nuevoEstado) {
+        trabajadorService.updateTicketStatus(ticket.getId(), nuevoEstado,
+                new OnOperationCompleteListener() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> {
+                            Toast.makeText(TrabajadorTicketActivity.this,
+                                    "Estado actualizado correctamente", Toast.LENGTH_SHORT).show();
+                            loadTickets();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(TrabajadorTicketActivity.this,
+                                    "Error al actualizar estado: " + error, Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
     }
 
     private void showAddCommentDialog(final Ticket ticket) {
-        // Implementa un AlertDialog para agregar comentario
-        trabajadorService.addTicketComment(ticket.getId(), "Nuevo comentario", new TrabajadorService.OnOperationCompleteListener() {
-            @Override
-            public void onSuccess() {
-                Toast.makeText(TrabajadorTicketActivity.this,
-                        "Comentario agregado", Toast.LENGTH_SHORT).show();
-                loadTickets(); // Recargar tickets para mostrar cambios
-            }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Agregar Comentario");
 
-            @Override
-            public void onError(String error) {
-                Toast.makeText(TrabajadorTicketActivity.this,
-                        "Error al agregar comentario: " + error, Toast.LENGTH_SHORT).show();
+        final android.widget.EditText input = new android.widget.EditText(this);
+        builder.setView(input);
+
+        builder.setPositiveButton("Agregar", (dialog, which) -> {
+            String comentario = input.getText().toString().trim();
+            if (!comentario.isEmpty()) {
+                agregarComentario(ticket, comentario);
             }
         });
+
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
+        builder.show();
     }
 
+    private void agregarComentario(Ticket ticket, String comentario) {
+        trabajadorService.addTicketComment(ticket.getId(), comentario,
+                new OnOperationCompleteListener() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> {
+                            Toast.makeText(TrabajadorTicketActivity.this,
+                                    "Comentario agregado", Toast.LENGTH_SHORT).show();
+                            loadTickets();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(TrabajadorTicketActivity.this,
+                                    "Error al agregar comentario: " + error, Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        cleanupResources();
+    }
+    private void cleanupResources() {
         if (trabajadorService != null) {
             trabajadorService.cleanup();
+            trabajadorService = null;
         }
     }
 }

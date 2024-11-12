@@ -22,7 +22,6 @@ public class TicketDetail extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_ticket_detail);
-
         // Setup toolbar
         Toolbar toolbar = findViewById(R.id.toolbar_detail);
         setSupportActionBar(toolbar);
@@ -30,7 +29,6 @@ public class TicketDetail extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Detalle del Ticket");
         }
-
         // Initialize views
         ImageView ivTicketImage = findViewById(R.id.ivTicketDetailImage);
         TextView tvTicketNumber = findViewById(R.id.tvTicketDetailNumber);
@@ -39,7 +37,6 @@ public class TicketDetail extends AppCompatActivity {
         TextView tvProblem = findViewById(R.id.tvTicketDetailProblem);
         TextView tvArea = findViewById(R.id.tvTicketDetailArea);
         TextView tvDescription = findViewById(R.id.tvTicketDetailDescription);
-
         // Get data from intent
         Intent intent = getIntent();
         if (intent != null) {
@@ -50,7 +47,6 @@ public class TicketDetail extends AppCompatActivity {
             String area = intent.getStringExtra("area");
             String description = intent.getStringExtra("description");
             String imageBase64 = intent.getStringExtra("imagen");
-
             // Set text data to views
             setTextWithDefault(tvTicketNumber, "Ticket #" + ticketNumber, "Sin número");
             setTextWithDefault(tvCreator, "Creado por: " + creator, "Creador no especificado");
@@ -58,7 +54,6 @@ public class TicketDetail extends AppCompatActivity {
             setTextWithDefault(tvProblem, "Problema: " + problem, "Problema no especificado");
             setTextWithDefault(tvArea, "Área: " + area, "Área no especificada");
             setTextWithDefault(tvDescription, "Descripción:\n" + description, "Sin descripción");
-
             // Handle image
             if (imageBase64 != null && !imageBase64.isEmpty()) {
                 try {
