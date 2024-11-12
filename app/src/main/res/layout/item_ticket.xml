@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:layout_marginTop="4dp"
                 android:textColor="@android:color/black"/>
             <TextView
@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/text_light"
+                android:textColor="@color/black"
                 android:textSize="12sp"/>
         </LinearLayout>
 
@@ -109,32 +109,35 @@
 
             <Button
                 android:id="@+id/btnUpdateStatus"
-                style="@style/Widget.MaterialComponents.Button"
+
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Actualizar Estado"
                 android:layout_marginEnd="4dp"
-                android:visibility="gone"/>
+                android:layout_weight="1"
+                android:background="@drawable/admincerrar"
+                android:text="Actualizar Estado"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/btnUpdatePriority"
-                style="@style/Widget.MaterialComponents.Button"
+
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Actualizar Prioridad"
                 android:layout_marginEnd="4dp"
-                android:visibility="gone"/>
+                android:layout_weight="1"
+                android:background="@drawable/admincerrar"
+                android:text="Actualizar Prioridad"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/btnAssignWorker"
-                style="@style/Widget.MaterialComponents.Button"
+
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/admincerrar"
                 android:text="Asignar Trabajador"
-                android:visibility="gone"/>
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

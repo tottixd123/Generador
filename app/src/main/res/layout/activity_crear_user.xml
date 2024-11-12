@@ -21,12 +21,13 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitulo"
             app:srcCompat="@drawable/nuevousuariocrear" />
+
 
         <TextView
             android:id="@+id/tvTitulo"
@@ -36,15 +37,15 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="45dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="44dp"
             android:layout_marginEnd="53dp"
             android:text="Nueva Cuenta de Usuario"
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.25"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView6" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
             android:id="@+id/etNombre"
@@ -58,9 +59,8 @@
             android:hint="Nombre completo"
             android:padding="12dp"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@+id/tvTitulo"
-            tools:layout_editor_absoluteX="3dp" />
-
+            app:layout_constraintTop_toBottomOf="@+id/imageView6"
+            tools:layout_editor_absoluteX="0dp" />
 
         <EditText
             android:id="@+id/etEmail"

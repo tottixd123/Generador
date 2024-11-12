@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <com.google.android.material.card.MaterialCardView
@@ -37,6 +37,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
+                    android:textSize="18sp"
                     android:text="Información del Problema"
                     android:textStyle="bold" />
 
@@ -57,6 +58,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvCreationDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
                 <ImageView
                     android:id="@+id/ivTicketImage"
                     android:layout_width="match_parent"
@@ -65,10 +72,6 @@
                     android:adjustViewBounds="true"
                     android:background="@color/light_gray"
                     android:layout_margin="8dp"/>
-                <TextView
-                    android:id="@+id/tvCreationDate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -89,20 +92,50 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
+                    android:textSize="18sp"
                     android:text="Estado del Ticket"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tvStatus"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvPriority"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp" />
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="100dp"
+                        android:layout_height="25dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="4dp">
+
+                        <TextView
+                            android:id="@+id/tvStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="16dp"
+                            android:paddingTop="2dp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp" />
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="70dp"
+                        android:layout_height="25dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="4dp">
+
+                        <TextView
+                            android:id="@+id/tvPriority"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:paddingTop="2dp"
+                            android:paddingStart="16dp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp" />
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
 
                 <Spinner
                     android:id="@+id/spinnerStatus"
@@ -114,6 +147,8 @@
                     android:id="@+id/btnUpdateStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/admincerrar"
                     android:text="Actualizar Estado" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -136,6 +171,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:text="Comentarios"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -149,12 +185,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
+                    android:background="@drawable/rounded_edittext_password_background"
+                    android:padding="12dp"
                     android:hint="Agregar comentario" />
 
                 <Button
                     android:id="@+id/btnAddComment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/admincerrar"
                     android:text="Agregar Comentario" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

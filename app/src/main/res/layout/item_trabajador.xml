@@ -43,7 +43,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Promover a Trabajador"/>
+            android:textSize="17sp"
+            android:background="@drawable/admincerrar"
+            android:text="Promover a Trabajador" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
