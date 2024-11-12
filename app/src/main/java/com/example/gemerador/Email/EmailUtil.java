@@ -1,6 +1,4 @@
 package com.example.gemerador.Email;
-
-
 public class EmailUtil {
     public static String createWelcomeEmailBody(String nombre, String email, String password) {
         return "Estimado/a " + nombre + ",\n\n" +

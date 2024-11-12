@@ -11,11 +11,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
 import com.example.gemerador.Admin.AdminMenu;
 import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.MainActivity;
@@ -134,17 +132,22 @@ public class Login extends AppCompatActivity {
         }
     }
     private void verificarRolUsuario(String userId) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Usuarios").child(userId);
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("Usuarios")
+                .child(userId);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    // Obtener el rol del usuario
-                    String role = dataSnapshot.child("role").getValue(String.class);
-                    String nombre = dataSnapshot.child("nombre").getValue(String.class);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String role = snapshot.child("role").getValue(String.class);
+                    String nombre = snapshot.child("nombre").getValue(String.class);
 
-                    // Guardar información del usuario en SharedPreferences
-                    guardarDatosUsuario(nombre, role);
+                    // Guardar información del usuario de forma persistente
+                    SharedPreferences.Editor editor = getSharedPreferences("UserData", MODE_PRIVATE).edit();
+                    editor.putString("role", role);
+                    editor.putString("nombre", nombre);
+                    editor.putString("userId", userId);
+                    editor.apply();
 
                     switch (role) {
                         case "Administrador":
@@ -162,22 +165,12 @@ public class Login extends AppCompatActivity {
                     }
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(Login.this, "Error al verificar usuario", Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "Error: " + error.getMessage());
             }
         });
     }
-    private void guardarDatosUsuario(String nombre, String role) {
-        SharedPreferences prefs = getSharedPreferences("UserData", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("nombre", nombre);
-        editor.putString("role", role);
-        editor.apply();
-    }
-
     private void irAAdminMenu() {
         Intent intent = new Intent(Login.this, AdminMenu.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

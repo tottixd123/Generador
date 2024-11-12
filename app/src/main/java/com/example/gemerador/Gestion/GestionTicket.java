@@ -1,7 +1,6 @@
 package com.example.gemerador.Gestion;
 
 public class GestionTicket {
-
     public GestionTicket(String ticketId, String ticketNumber, String status, String assignedWorkerId, String assignedWorkerName, String priority, String lastUpdated, String comments) {
         this.ticketId = ticketId;
         this.ticketNumber = ticketNumber;
@@ -12,7 +11,6 @@ public class GestionTicket {
         this.lastUpdated = lastUpdated;
         this.comments = comments;
     }
-
     public String getTicketId() {
         return ticketId;
     }
@@ -76,7 +74,6 @@ public class GestionTicket {
     public void setComments(String comments) {
         this.comments = comments;
     }
-
     private String ticketId;
     private String ticketNumber;
     private String status;
@@ -85,7 +82,4 @@ public class GestionTicket {
     private String priority;
     private String lastUpdated;
     private String comments;
-
-
-
 }

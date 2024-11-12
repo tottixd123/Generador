@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -19,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp"
+            android:padding="12dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/status_background">
 
@@ -28,17 +29,35 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textSize="16sp"/>
-
+                android:textSize="16sp"
+                android:textColor="@color/text_light"/>
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:layout_marginTop="4dp"/>
+                android:textSize="16sp"
+                android:layout_marginTop="4dp"
+                android:textColor="@android:color/black"/>
+
+            <TextView
+                android:id="@+id/tvAssignedWorker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp"
+                android:textColor="@android:color/black"/>
+            <TextView
+                android:id="@+id/tvLastUpdated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/text_light"
+                android:textSize="12sp"/>
         </LinearLayout>
 
-        <!-- Ticket Information -->
+        <!-- Resto del contenido del ticket -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -67,10 +86,6 @@
 
             <TextView
                 android:id="@+id/tvPriority"
-                style="@style/TicketTextStyle"/>
-
-            <TextView
-                android:id="@+id/tvAssignedWorker"
                 style="@style/TicketTextStyle"/>
         </LinearLayout>
 

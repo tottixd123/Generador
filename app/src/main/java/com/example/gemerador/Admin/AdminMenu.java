@@ -123,21 +123,45 @@ public class AdminMenu extends AppCompatActivity {
         btnListaUser.setOnClickListener(v ->
                 startActivity(new Intent(this, UserListActivity.class)));
     }
-
     private void cerrarSesion() {
+        // Limpiar SharedPreferences
+        getSharedPreferences("UserData", MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
+
+        // Cerrar sesión del administrador
         if (sessionManager != null) {
             sessionManager.signOut(() -> {
-                redirectToMain();
+                // Limpiar sesión del administrador
+                sessionManager.stopListening();
+                sessionManager = null;
+                isSessionManagerInitialized = false;
+
+                // Cerrar sesión en Firebase
+                if (mAuth != null) {
+                    mAuth.signOut();
+                }
+
+                // Redireccionar al MainActivity
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
             });
         } else {
-            Log.w(TAG, "Attempting to sign out with null SessionManager");
+            // Si no hay sessionManager, hacer cierre de sesión simple
             if (mAuth != null) {
                 mAuth.signOut();
             }
-            redirectToMain();
+
+            // Redireccionar al MainActivity
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         }
     }
-
     private void redirectToMain() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

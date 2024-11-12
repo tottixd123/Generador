@@ -63,5 +63,4 @@ public class Trabajador {
         this.available = available;
         this.activeTickets = activeTickets;
     }
-
 }
