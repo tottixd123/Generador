@@ -150,7 +150,7 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
         AdapterView.OnItemSelectedListener filterListener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                applyFilters(); // Filtra al seleccionar cualquier elemento en los spinners
+                applyFilters();
             }
 
             @Override
