@@ -5,21 +5,25 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.R;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class Perfil_user extends AppCompatActivity {
     private TextView usernameTextView, emailTextView;
     private Switch notificationSwitch;
-    private Button logoutButton, iniciobtn;
+    private Button logoutButton, iniciobtn,changePasswordButton;
     private ImageView bellIcon;
     private FirebaseAuth mAuth;
     private static final String PREFS_NAME = "NotificationPrefs";
@@ -42,6 +46,7 @@ public class Perfil_user extends AppCompatActivity {
         emailTextView = findViewById(R.id.emailValue);
         notificationSwitch = findViewById(R.id.notificationSwitch);
         logoutButton = findViewById(R.id.logoutButton);
+        changePasswordButton = findViewById(R.id.changePasswordButton);
         bellIcon = findViewById(R.id.imageView4);
 
         // Cargar estado de notificaciones
@@ -56,6 +61,8 @@ public class Perfil_user extends AppCompatActivity {
             logout();
         });
 
+        changePasswordButton.setOnClickListener(v -> showChangePasswordDialog());
+
         bellIcon.setOnClickListener(v -> {
             notificationSwitch.setChecked(!notificationSwitch.isChecked());
             updateNotificationPreference(notificationSwitch.isChecked());
@@ -64,6 +71,81 @@ public class Perfil_user extends AppCompatActivity {
         notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateNotificationPreference(isChecked);
         });
+    }
+    private void showChangePasswordDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_change_password, null);
+        EditText currentPasswordEt = dialogView.findViewById(R.id.currentPasswordEt);
+        EditText newPasswordEt = dialogView.findViewById(R.id.newPasswordEt);
+        EditText confirmPasswordEt = dialogView.findViewById(R.id.confirmPasswordEt);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Cambiar Contraseña")
+                .setView(dialogView)
+                .setPositiveButton("Cambiar", null)
+                .setNegativeButton("Cancelar", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> {
+                String currentPassword = currentPasswordEt.getText().toString();
+                String newPassword = newPasswordEt.getText().toString();
+                String confirmPassword = confirmPasswordEt.getText().toString();
+
+                if (validatePasswordInput(currentPassword, newPassword, confirmPassword)) {
+                    changePassword(currentPassword, newPassword, dialog);
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
+    private boolean validatePasswordInput(String currentPassword, String newPassword, String confirmPassword) {
+        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            Toast.makeText(this, "Todos los campos son requeridos", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (newPassword.length() < 6) {
+            Toast.makeText(this, "La nueva contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            Toast.makeText(this, "Las contraseñas nuevas no coinciden", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void changePassword(String currentPassword, String newPassword, AlertDialog dialog) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null && user.getEmail() != null) {
+            // Reautenticar al usuario
+            AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+
+            user.reauthenticate(credential).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    // Actualizar la contraseña
+                    user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
+                        if (updateTask.isSuccessful()) {
+                            Toast.makeText(Perfil_user.this,
+                                    "Contraseña actualizada exitosamente", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(Perfil_user.this,
+                                    "Error al actualizar la contraseña: " + updateTask.getException().getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else {
+                    Toast.makeText(Perfil_user.this,
+                            "La contraseña actual es incorrecta", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void updateNotificationPreference(boolean enabled) {

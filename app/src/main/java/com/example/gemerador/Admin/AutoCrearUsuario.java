@@ -233,7 +233,6 @@ public class AutoCrearUsuario extends AppCompatActivity implements JavaMailAPI.O
         );
         javaMailAPI.sendEmail();
     }
-
     @Override
     public void onEmailSent(boolean success, String message) {
         runOnUiThread(() -> {
@@ -251,7 +250,6 @@ public class AutoCrearUsuario extends AppCompatActivity implements JavaMailAPI.O
             }
         });
     }
-
     private void copiarPassword() {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("password", generatedPassword);
