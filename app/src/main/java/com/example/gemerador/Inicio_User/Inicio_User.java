@@ -423,6 +423,7 @@ public class Inicio_User extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 adapter.searchTickets(s.toString());
             }
+
         });
     }
 
