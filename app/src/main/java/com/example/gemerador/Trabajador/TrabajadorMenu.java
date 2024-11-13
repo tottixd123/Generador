@@ -4,9 +4,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,6 +17,8 @@ import com.example.gemerador.Crear_Ti.TicketDetail;
 import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.R;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -101,8 +106,85 @@ public class TrabajadorMenu extends AppCompatActivity {
 
         Button btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
         btnCerrarSesion.setOnClickListener(v -> cerrarSesion());
-    }
 
+        Button btnChangePassword = findViewById(R.id.btnChangePassword);
+        btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
+    }
+    private void showChangePasswordDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_change_password, null);
+        EditText currentPasswordEt = dialogView.findViewById(R.id.currentPasswordEt);
+        EditText newPasswordEt = dialogView.findViewById(R.id.newPasswordEt);
+        EditText confirmPasswordEt = dialogView.findViewById(R.id.confirmPasswordEt);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Cambiar Contraseña")
+                .setView(dialogView)
+                .setPositiveButton("Cambiar", null)
+                .setNegativeButton("Cancelar", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> {
+                String currentPassword = currentPasswordEt.getText().toString();
+                String newPassword = newPasswordEt.getText().toString();
+                String confirmPassword = confirmPasswordEt.getText().toString();
+
+                if (validatePasswordInput(currentPassword, newPassword, confirmPassword)) {
+                    changePassword(currentPassword, newPassword, dialog);
+                }
+            });
+        });
+
+        dialog.show();
+    }
+    private boolean validatePasswordInput(String currentPassword, String newPassword, String confirmPassword) {
+        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            Toast.makeText(this, "Todos los campos son requeridos", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (newPassword.length() < 6) {
+            Toast.makeText(this, "La nueva contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            Toast.makeText(this, "Las contraseñas nuevas no coinciden", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
+    private void changePassword(String currentPassword, String newPassword, AlertDialog dialog) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null && user.getEmail() != null) {
+            // Reautenticar al usuario
+            AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+
+            user.reauthenticate(credential)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Actualizar la contraseña
+                            user.updatePassword(newPassword)
+                                    .addOnCompleteListener(updateTask -> {
+                                        if (updateTask.isSuccessful()) {
+                                            Toast.makeText(TrabajadorMenu.this,
+                                                    "Contraseña actualizada exitosamente", Toast.LENGTH_SHORT).show();
+                                            dialog.dismiss();
+                                        } else {
+                                            Toast.makeText(TrabajadorMenu.this,
+                                                    "Error al actualizar la contraseña: " + updateTask.getException().getMessage(),
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                        } else {
+                            Toast.makeText(TrabajadorMenu.this,
+                                    "La contraseña actual es incorrecta", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+    }
     private void setupTrabajadorService() {
         trabajadorService = new TrabajadorService(userId);
     }
