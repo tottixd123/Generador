@@ -15,6 +15,7 @@ import com.example.gemerador.Lista.UserListActivity;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Models.Solicitud;
 import com.example.gemerador.R;
+import com.example.gemerador.Reporte.TicketReportActivity;
 import com.example.gemerador.Trabajador.TrabajadorManagement;
 import com.example.gemerador.User_Admin.AdminUserManager;
 import com.google.firebase.auth.AuthCredential;
@@ -125,7 +126,8 @@ public class AdminMenu extends AppCompatActivity {
         // Agregar el botón de cambiar contraseña
         Button btnChangePassword = findViewById(R.id.btnChangePassword);
         btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
-
+        Button btnReportes = findViewById(R.id.btnReportes);
+        btnReportes.setOnClickListener(v -> startActivity(new Intent(this, TicketReportActivity.class)));
 
         btnWorkerManagement.setOnClickListener(v ->
                 startActivity(new Intent(this, TrabajadorManagement.class)));
