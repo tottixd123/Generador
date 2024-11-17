@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,9 +23,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,11 +46,28 @@ public class TicketReportActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private FirebaseUser currentUser;
     private String userRole;
+    private LinearLayout layoutCommonIncidents, layoutTimeAnalysis, layoutWorkerPerformance;
+    private TextView tvTodayTickets, tvDailyResolutionRate;
+    private Map<String, Integer> commonIncidents = new HashMap<>();
+    private Map<String, Long> averageResolutionTimes = new HashMap<>();
+    private static class WorkerStats {
+        public int totalTickets;
+        public int resolvedTickets;
+        public long averageResolutionTime;
+
+        public WorkerStats() {
+            totalTickets = 0;
+            resolvedTickets = 0;
+            averageResolutionTime = 0;
+        }
+    }
+    private Map<String, WorkerStats> workerStats = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_report);
+        workerStats = new HashMap<>();
 
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
@@ -86,6 +108,11 @@ public class TicketReportActivity extends AppCompatActivity {
         cardViewMonthly = findViewById(R.id.cardViewMonthly);
         cardViewTotal = findViewById(R.id.cardViewTotal);
         progressBar = findViewById(R.id.progressBar);
+        layoutCommonIncidents = findViewById(R.id.layoutCommonIncidents);
+        layoutTimeAnalysis = findViewById(R.id.layoutTimeAnalysis);
+        layoutWorkerPerformance = findViewById(R.id.layoutWorkerPerformance);
+        tvTodayTickets = findViewById(R.id.tvTodayTickets);
+        tvDailyResolutionRate = findViewById(R.id.tvDailyResolutionRate);
     }
 
     private void setupToolbar() {
@@ -142,7 +169,16 @@ public class TicketReportActivity extends AppCompatActivity {
     }
     private void processTicketData(JSONArray ticketArray) {
         try {
+            commonIncidents.clear();
+            averageResolutionTimes.clear();
+            workerStats.clear();
+
             Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            Date startOfDay = calendar.getTime();
+
             int currentMonth = calendar.get(Calendar.MONTH);
             int currentYear = calendar.get(Calendar.YEAR);
 
@@ -150,70 +186,79 @@ public class TicketReportActivity extends AppCompatActivity {
             int resolvedTickets = 0;
             int monthlyTickets = 0;
             int monthlyResolved = 0;
+            int todayTickets = 0;
+            int todayResolved = 0;
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
-            // Debug log
-            Log.d(TAG, "Total tickets encontrados: " + totalTickets);
-
             for (int i = 0; i < ticketArray.length(); i++) {
                 JSONObject ticket = ticketArray.getJSONObject(i);
-
-                // Verificar estado - considerar diferentes variaciones de "Resuelto"
                 String status = ticket.optString("status", "").toLowerCase().trim();
+                String problem = ticket.optString("problemSpinner", "Sin categoría");
+                String workerId = ticket.optString("assignedWorkerId", "");
+                String workerName = ticket.optString("assignedWorkerName", "Sin asignar");
+                String creationDateStr = ticket.optString("creationDate", "");
+                String lastUpdatedStr = ticket.optString("lastUpdated", creationDateStr);
                 boolean isResolved = status.equals("resuelto") || status.equals("terminado") ||
                         status.equals("completed") || status.equals("resolved");
-
-                // Debug log para cada ticket
-                Log.d(TAG, String.format("Ticket #%d - Status: %s, Resuelto: %b",
-                        i + 1, status, isResolved));
-
-                if (isResolved) {
-                    resolvedTickets++;
-                }
-
-                // Verificar si el ticket es del mes actual
-                String creationDate = ticket.optString("creationDate", "");
-                if (!creationDate.isEmpty()) {
+                commonIncidents.put(problem, commonIncidents.getOrDefault(problem, 0) + 1);
+                if (!creationDateStr.isEmpty()) {
                     try {
-                        Date date = sdf.parse(creationDate);
-                        if (date != null) {
-                            calendar.setTime(date);
+                        Date creationDate = sdf.parse(creationDateStr);
+                        if (creationDate != null) {
+                            if (creationDate.after(startOfDay)) {
+                                todayTickets++;
+                                if (isResolved) todayResolved++;
+                            }
+                            calendar.setTime(creationDate);
                             if (calendar.get(Calendar.MONTH) == currentMonth &&
                                     calendar.get(Calendar.YEAR) == currentYear) {
-
                                 monthlyTickets++;
-                                if (isResolved) {
-                                    monthlyResolved++;
+                                if (isResolved) monthlyResolved++;
+                            }
+                            if (isResolved && !lastUpdatedStr.isEmpty()) {
+                                Date resolutionDate = sdf.parse(lastUpdatedStr);
+                                if (resolutionDate != null) {
+                                    long resolutionTime = resolutionDate.getTime() - creationDate.getTime();
+                                    averageResolutionTimes.put(problem,
+                                            averageResolutionTimes.getOrDefault(problem, 0L) + resolutionTime);
+                                    if (!workerId.isEmpty()) {
+                                        WorkerStats stats = workerStats.computeIfAbsent(workerName,
+                                                k -> new WorkerStats());
+                                        stats.totalTickets++;
+                                        stats.resolvedTickets++;
+                                        stats.averageResolutionTime =
+                                                (stats.averageResolutionTime * (stats.resolvedTickets - 1) +
+                                                        resolutionTime) / stats.resolvedTickets;
+                                    }
                                 }
-
-                                // Debug log para tickets mensuales
-                                Log.d(TAG, String.format("Ticket mensual #%d - Creado: %s, Resuelto: %b",
-                                        monthlyTickets, creationDate, isResolved));
                             }
                         }
                     } catch (ParseException e) {
-                        Log.e(TAG, "Error parsing date: " + creationDate + " - " + e.getMessage());
+                        Log.e(TAG, "Error parsing date: " + e.getMessage());
                     }
                 }
+                if (isResolved) {
+                    resolvedTickets++;
+                }
+                if (!workerId.isEmpty()) {
+                    WorkerStats stats = workerStats.computeIfAbsent(workerName, k -> new WorkerStats());
+                    stats.totalTickets++;
+                }
             }
-
-            // Debug log final
-            Log.d(TAG, String.format("Resumen final:\nTotal: %d\nResueltos: %d\nMensuales: %d\nMensuales Resueltos: %d",
-                    totalTickets, resolvedTickets, monthlyTickets, monthlyResolved));
-
             final int finalResolvedTickets = resolvedTickets;
             final int finalMonthlyTickets = monthlyTickets;
             final int finalMonthlyResolved = monthlyResolved;
-
+            final int finalTodayTickets = todayTickets;
+            final int finalTodayResolved = todayResolved;
             runOnUiThread(() -> {
                 updateUI(totalTickets, finalResolvedTickets, finalMonthlyTickets, finalMonthlyResolved);
-                Toast.makeText(this,
-                        String.format("Total: %d, Resueltos: %d", totalTickets, finalResolvedTickets),
-                        Toast.LENGTH_SHORT).show();
+                updateDailyStats(finalTodayTickets, finalTodayResolved);
+                updateCommonIncidents();
+                updateTimeAnalysis();
+                updateWorkerPerformance();
                 showLoading(false);
             });
-
         } catch (Exception e) {
             Log.e(TAG, "Error processing ticket data: " + e.getMessage());
             runOnUiThread(() -> {
@@ -223,32 +268,78 @@ public class TicketReportActivity extends AppCompatActivity {
             });
         }
     }
+    private void updateDailyStats(int todayTickets, int todayResolved) {
+        tvTodayTickets.setText(String.valueOf(todayTickets));
+        float resolutionRate = todayTickets > 0 ? (todayResolved * 100f) / todayTickets : 0;
+        tvDailyResolutionRate.setText(String.format(Locale.getDefault(),
+                "Resueltos hoy: %d (%.1f%%)", todayResolved, resolutionRate));
+    }
+    private void updateCommonIncidents() {
+        layoutCommonIncidents.removeAllViews();
+        List<Map.Entry<String, Integer>> sortedIncidents = new ArrayList<>(commonIncidents.entrySet());
+        sortedIncidents.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+        for (Map.Entry<String, Integer> entry : sortedIncidents) {
+            TextView textView = new TextView(this);
+            textView.setText(String.format(Locale.getDefault(),
+                    "%s: %d tickets", entry.getKey(), entry.getValue()));
+            textView.setPadding(0, 4, 0, 4);
+            layoutCommonIncidents.addView(textView);
+        }
+    }
+    private void updateTimeAnalysis() {
+        layoutTimeAnalysis.removeAllViews();
+        List<Map.Entry<String, Long>> sortedTimes = new ArrayList<>(averageResolutionTimes.entrySet());
+        sortedTimes.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+        for (Map.Entry<String, Long> entry : sortedTimes) {
+            TextView textView = new TextView(this);
+            long averageHours = entry.getValue() / (1000 * 60 * 60); // Convertido a horas
+            textView.setText(String.format(Locale.getDefault(),
+                    "%s: %d horas promedio", entry.getKey(), averageHours));
+            textView.setPadding(0, 4, 0, 4);
+            layoutTimeAnalysis.addView(textView);
+        }
+    }
+    private void updateWorkerPerformance() {
+        layoutWorkerPerformance.removeAllViews();
+        List<Map.Entry<String, WorkerStats>> sortedWorkers =
+                new ArrayList<>(workerStats.entrySet());
+        sortedWorkers.sort((a, b) ->
+                Integer.compare(b.getValue().totalTickets, a.getValue().totalTickets));
+        for (Map.Entry<String, WorkerStats> entry : sortedWorkers) {
+            TextView textView = new TextView(this);
+            WorkerStats stats = entry.getValue();
+            float resolutionRate = stats.totalTickets > 0 ?
+                    (stats.resolvedTickets * 100f) / stats.totalTickets : 0;
+            float avgHours = stats.resolvedTickets > 0 ?
+                    stats.averageResolutionTime / (1000f * 60 * 60) : 0;
+            String performanceText = String.format(Locale.getDefault(),
+                    "%s:\nTickets Totales: %d\nResueltos: %d (%.1f%%)\nTiempo Promedio: %.1f horas",
+                    entry.getKey(),
+                    stats.totalTickets,
+                    stats.resolvedTickets,
+                    resolutionRate,
+                    avgHours
+            );
+            textView.setText(performanceText);
+            textView.setPadding(0, 8, 0, 8);
+            layoutWorkerPerformance.addView(textView);
+        }
+    }
     private void updateUI(int total, int resolved, int monthly, int monthlyResolved) {
-        // Asegurar que los números tengan sentido
         resolved = Math.min(resolved, total);
         monthlyResolved = Math.min(monthlyResolved, monthly);
-
         int pending = total - resolved;
-
-        // Actualizar textos
         tvTotalTickets.setText(String.valueOf(total));
-
-        // Calcular porcentajes
         float resolvedPercentage = total > 0 ? (resolved * 100f) / total : 0;
         float monthlyResolvedPercentage = monthly > 0 ? (monthlyResolved * 100f) / monthly : 0;
-
-        // Formato con dos decimales
         String resolvedText = String.format(Locale.getDefault(),
                 "%d (%.1f%%)", resolved, resolvedPercentage);
         String monthlyResolvedText = String.format(Locale.getDefault(),
                 "%d (%.1f%%)", monthlyResolved, monthlyResolvedPercentage);
-
         tvResolvedTickets.setText(resolvedText);
         tvPendingTickets.setText(String.valueOf(pending));
         tvMonthlyTickets.setText(String.valueOf(monthly));
         tvMonthlyResolved.setText(monthlyResolvedText);
-
-        // Debug log
         Log.d(TAG, String.format("UI actualizada:\nTotal: %d\nResueltos: %s\nPendientes: %d\n" +
                         "Mensuales: %d\nMensuales Resueltos: %s",
                 total, resolvedText, pending, monthly, monthlyResolvedText));
@@ -257,8 +348,10 @@ public class TicketReportActivity extends AppCompatActivity {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         cardViewMonthly.setVisibility(show ? View.GONE : View.VISIBLE);
         cardViewTotal.setVisibility(show ? View.GONE : View.VISIBLE);
+        layoutCommonIncidents.setVisibility(show ? View.GONE : View.VISIBLE);
+        layoutTimeAnalysis.setVisibility(show ? View.GONE : View.VISIBLE);
+        layoutWorkerPerformance.setVisibility(show ? View.GONE : View.VISIBLE);
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
