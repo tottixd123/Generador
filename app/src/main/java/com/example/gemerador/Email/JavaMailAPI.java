@@ -25,6 +25,7 @@ public class JavaMailAPI {
     private final String message;
     private final OnEmailSentListener listener;
 
+    // Define la interfaz aquí
     public interface OnEmailSentListener {
         void onEmailSent(boolean success, String message);
     }
@@ -48,13 +49,10 @@ public class JavaMailAPI {
                 properties.put("mail.smtp.port", EmailConfig.SMTP_PORT);
                 properties.put("mail.smtp.auth", "true");
                 properties.put("mail.smtp.starttls.enable", "true");
-                properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
-                properties.put("mail.smtp.ssl.trust", "*");
 
-                // Configuración específica para Outlook
-                properties.put("mail.smtp.socketFactory.port", EmailConfig.SMTP_PORT);
-                properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                properties.put("mail.smtp.socketFactory.fallback", "true");
+                // Configuración específica para Gmail
+                properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+                properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
 
                 Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
                     @Override
@@ -63,7 +61,7 @@ public class JavaMailAPI {
                     }
                 });
 
-                // Habilitar debugging para ver más detalles en caso de error
+                // Habilitar debugging solo en desarrollo
                 session.setDebug(true);
 
                 MimeMessage mimeMessage = new MimeMessage(session);
@@ -71,6 +69,7 @@ public class JavaMailAPI {
                 mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
                 mimeMessage.setSubject(subject);
                 mimeMessage.setText(message);
+                mimeMessage.setSentDate(new java.util.Date());
 
                 Transport.send(mimeMessage);
 

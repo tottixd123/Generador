@@ -1,6 +1,5 @@
 package com.example.gemerador.login;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -109,14 +108,13 @@ public class Login extends AppCompatActivity {
             Intent intent = new Intent(this, Nuevo_Registro.class);
             startActivity(intent);
         });
+
+        // Actualizar el click listener para olvidó contraseña
         textViewOlvidoContrasena.setOnClickListener(v -> {
-            String usuario = editTextUsuario.getText().toString().trim();
-            if (usuario.isEmpty()) {
-                Toast.makeText(this, "Por favor, ingrese su correo electrónico", Toast.LENGTH_SHORT).show();
-            } else {
-                // Por ahora, solo mostraremos un mensaje
-                Toast.makeText(this, "Se ha enviado un correo para restablecer su contraseña", Toast.LENGTH_SHORT).show();
-            }
+            String email = editTextUsuario.getText().toString().trim();
+            Intent intent = new Intent(Login.this, ForgotPasswordActivity.class);
+            intent.putExtra("email", email); // Pasar el email si ya fue ingresado
+            startActivity(intent);
         });
     }
     private void volverAlMain() {

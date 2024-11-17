@@ -318,6 +318,12 @@ public class Inicio_User extends AppCompatActivity {
         menuIcon.setOnClickListener(v -> startActivity(new Intent(Inicio_User.this, Perfil_user.class)));
     }
     private void fetchTicketsFromMockAPI() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showError("Usuario no autenticado");
+            return;
+        }
+
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url("https://66fd14c5c3a184a84d18ff38.mockapi.io/generador")
@@ -354,34 +360,39 @@ public class Inicio_User extends AppCompatActivity {
 
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        String ticketUserId = jsonObject.optString("userId", "");
 
-                        Ticket ticket = new Ticket(
-                                jsonObject.optString("ticketNumber", "Sin número"),
-                                jsonObject.optString("problemSpinner", "Sin especificar"),
-                                jsonObject.optString("area_problema", "Sin área"),
-                                jsonObject.optString("detalle", "Sin detalles"),
-                                jsonObject.optString("imagen", ""),
-                                jsonObject.optString("id", String.valueOf(i)),
-                                jsonObject.optString("createdBy", "Usuario no especificado"),
-                                jsonObject.optString("creationDate", "Fecha no especificada"),
-                                FirebaseAuth.getInstance().getCurrentUser() != null ?
-                                        FirebaseAuth.getInstance().getCurrentUser().getUid() : "0"
-                        );
+                        // Solo agregar tickets si pertenecen al usuario actual o si es un trabajador
+                        if (ROLE_WORKER.equals(userRole) ||
+                                currentUser.getUid().equals(ticketUserId)) {
 
-                        if (jsonObject.has("status")) {
-                            ticket.setStatus(jsonObject.getString("status"));
-                        }
-                        if (jsonObject.has("priority")) {
-                            ticket.setPriority(jsonObject.getString("priority"));
-                        }
-                        if (jsonObject.has("assignedWorkerId")) {
-                            ticket.setAssignedWorkerId(jsonObject.getString("assignedWorkerId"));
-                        }
-                        if (jsonObject.has("assignedWorkerName")) {
-                            ticket.setAssignedWorkerName(jsonObject.getString("assignedWorkerName"));
-                        }
+                            Ticket ticket = new Ticket(
+                                    jsonObject.optString("ticketNumber", "Sin número"),
+                                    jsonObject.optString("problemSpinner", "Sin especificar"),
+                                    jsonObject.optString("area_problema", "Sin área"),
+                                    jsonObject.optString("detalle", "Sin detalles"),
+                                    jsonObject.optString("imagen", ""),
+                                    jsonObject.optString("id", String.valueOf(i)),
+                                    jsonObject.optString("createdBy", "Usuario no especificado"),
+                                    jsonObject.optString("creationDate", "Fecha no especificada"),
+                                    ticketUserId
+                            );
 
-                        newTickets.add(ticket);
+                            if (jsonObject.has("status")) {
+                                ticket.setStatus(jsonObject.getString("status"));
+                            }
+                            if (jsonObject.has("priority")) {
+                                ticket.setPriority(jsonObject.getString("priority"));
+                            }
+                            if (jsonObject.has("assignedWorkerId")) {
+                                ticket.setAssignedWorkerId(jsonObject.getString("assignedWorkerId"));
+                            }
+                            if (jsonObject.has("assignedWorkerName")) {
+                                ticket.setAssignedWorkerName(jsonObject.getString("assignedWorkerName"));
+                            }
+
+                            newTickets.add(ticket);
+                        }
                     }
 
                     runOnUiThread(() -> {
@@ -410,7 +421,6 @@ public class Inicio_User extends AppCompatActivity {
             }
         });
     }
-
     private void setupSearch() {
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
