@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.R;
 import com.google.firebase.auth.AuthCredential;
@@ -55,6 +57,7 @@ public class Perfil_user extends AppCompatActivity {
         notificationSwitch.setChecked(notificationsEnabled);
     }
 
+
     private void setupClickListeners() {
         logoutButton.setOnClickListener(v -> {
             Toast.makeText(Perfil_user.this, "Cerrando sesión...", Toast.LENGTH_SHORT).show();
@@ -81,7 +84,7 @@ public class Perfil_user extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("Cambiar Contraseña")
                 .setView(dialogView)
-                .setPositiveButton("Cambiar", null)
+                .setPositiveButton("Editar Contraseña", null)
                 .setNegativeButton("Cancelar", null);
 
         AlertDialog dialog = builder.create();

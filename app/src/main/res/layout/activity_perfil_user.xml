@@ -8,6 +8,65 @@
     android:background="#FFFFFF"
     tools:context=".Perfil.Perfil_user">
 
+    <LinearLayout
+        android:id="@+id/linearLayout236"
+        android:layout_width="44dp"
+        android:layout_height="46dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="45dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/regresoPUser"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="5dp"
+            app:tint="#068f41"
+            app:srcCompat="@drawable/cruzarsalir" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="107dp"
+        android:layout_height="28dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/botoneditarp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imageView111"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="5dp"
+                app:srcCompat="@drawable/cerrarsesion" />
+
+            <Button
+                android:id="@+id/logoutButton"
+                android:layout_width="78dp"
+                android:layout_height="22dp"
+                android:layout_margin="0dp"
+                android:background="@android:color/transparent"
+                android:padding="0dp"
+                android:text="Cerrar Sesión"
+                android:textSize="11dp"
+                android:translationY="2dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -19,6 +78,7 @@
             android:orientation="vertical">
 
             <!-- Imagen de perfil -->
+
             <ImageView
                 android:id="@+id/imageView2"
                 android:layout_width="168dp"
@@ -101,22 +161,11 @@
                         android:textStyle="bold" />
 
                 </RelativeLayout>
-            </LinearLayout>
-
-            <!-- Cambiar Contraseña card -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="40dp"
-                android:layout_marginEnd="20dp"
-                android:background="@drawable/ausercard"
-                android:orientation="vertical"
-                android:padding="15dp">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="10dp">
 
                     <Button
                         android:id="@+id/changePasswordButton"
@@ -125,9 +174,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_alignParentTop="true"
                         android:layout_alignParentEnd="true"
-                        android:layout_marginStart="80dp"
                         android:layout_marginTop="1dp"
-                        android:layout_marginEnd="75dp"
                         android:layout_weight="1"
                         android:background="@drawable/admincerrar"
                         android:backgroundTint="#068f41"
@@ -139,47 +186,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.497"
                         app:layout_constraintStart_toStartOf="parent" />
-
-                </RelativeLayout>
-            </LinearLayout>
-
-            <!-- Cerrar Sesión card -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="40dp"
-                android:layout_marginEnd="20dp"
-                android:background="@drawable/ausercard"
-                android:orientation="vertical"
-                android:padding="15dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <Button
-                        android:id="@+id/logoutButton"
-                        android:layout_width="186dp"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginStart="80dp"
-                        android:layout_marginTop="1dp"
-                        android:layout_marginEnd="75dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/admincerrar"
-                        android:backgroundTint="#068f41"
-                        android:radius="6dp"
-                        android:text="Cerrar Sesión"
-                        android:textSize="17sp"
-                        android:tint="#068f41"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.497"
-                        app:layout_constraintStart_toStartOf="parent" />
-
                 </RelativeLayout>
             </LinearLayout>
 
