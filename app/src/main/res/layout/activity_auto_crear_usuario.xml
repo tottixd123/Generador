@@ -17,27 +17,27 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="366dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="48dp"
-            android:text="Creación Automática de Usuario"
-            android:textAlignment="center"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
         <ImageView
             android:id="@+id/imageView7"
             android:layout_width="match_parent"
             android:layout_height="122dp"
             app:srcCompat="@drawable/nuevousuario" />
 
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="366dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:text="Creación Automática de Usuario"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="97dp"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="30dp"
             android:layout_marginEnd="20dp"
             android:background="@drawable/ausercard"
             android:orientation="vertical"

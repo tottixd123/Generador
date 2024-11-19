@@ -12,12 +12,12 @@
         android:id="@+id/imageView2"
         android:layout_width="135dp"
         android:layout_height="105dp"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="29dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="25dp"
-        android:layout_toStartOf="@+id/linearLayout2"
-        android:layout_toEndOf="@+id/linearLayout"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="134dp"
+        android:layout_marginTop="37dp"
+        android:layout_marginEnd="142dp"
         app:srcCompat="@drawable/gata" />
 
     <TextView
@@ -54,13 +54,33 @@
         android:textStyle="bold" />
 
     <LinearLayout
+        android:id="@+id/linearLayoutyt"
+        android:layout_width="43dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/textView6"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="110dp"
+        android:background="@drawable/botoneditarp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="121dp"
-        android:layout_height="28dp"
+        android:layout_width="176dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/textView6"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
+        android:layout_toStartOf="@+id/linearLayoutyt"
         android:background="@drawable/botoneditarp"
         android:orientation="vertical">
 
@@ -70,36 +90,39 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/imageView11"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="2dp"
+                android:id="@+id/imageView161"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="4dp"
                 android:layout_marginTop="5dp"
                 app:srcCompat="@drawable/candado" />
 
             <Button
                 android:id="@+id/btnChangePassword"
-                android:layout_width="100dp"
-                android:layout_height="22dp"
+                android:layout_width="142dp"
+                android:layout_height="32dp"
                 android:layout_margin="0dp"
                 android:layout_marginStart="26dp"
                 android:background="@android:color/transparent"
                 android:padding="0dp"
                 android:text="Editar Contraseña"
-                android:textSize="11dp"
-                android:translationY="3dp" />
+                android:textSize="14dp"
+                android:textStyle="bold"
+                android:translationY="2dp" />
         </LinearLayout>
 
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="107dp"
-        android:layout_height="28dp"
-        android:layout_alignParentTop="true"
+        android:layout_width="176dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/linearLayout3"
+        android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginStart="127dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="130dp"
         android:background="@drawable/botoneditarp"
         android:orientation="vertical">
 
@@ -110,34 +133,36 @@
 
             <ImageView
                 android:id="@+id/imageView111"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="5dp"
                 app:srcCompat="@drawable/cerrarsesion" />
 
             <Button
                 android:id="@+id/btnCerrarSesion"
-                android:layout_width="78dp"
-                android:layout_height="22dp"
+                android:layout_width="110dp"
+                android:layout_height="30dp"
                 android:layout_margin="0dp"
                 android:background="@android:color/transparent"
                 android:padding="0dp"
                 android:text="Cerrar Sesión"
-                android:textSize="11dp"
+                android:textSize="14sp"
+                android:textStyle="bold"
                 android:translationY="2dp" />
         </LinearLayout>
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView6"
+        android:layout_below="@+id/linearLayout"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="8dp"
         android:orientation="vertical">
 
@@ -181,22 +206,22 @@
 
                 <Button
                     android:id="@+id/btnCrearUsuario"
-                    android:layout_width="83dp"
-                    android:layout_height="46dp"
+                    android:layout_width="65dp"
+                    android:layout_height="51dp"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="5dp"
-                    android:layout_marginEnd="20dp"
+                    android:layout_marginEnd="21dp"
+                    android:layout_marginBottom="8dp"
                     android:background="@android:color/transparent"
                     android:padding="0dp"
                     android:text="Crear Usuario"
                     android:textColor="@color/black"
                     android:textSize="14dp"
-                    app:layout_constraintBottom_toTopOf="@+id/imageView2as"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.416"
                     app:layout_constraintStart_toEndOf="@+id/view"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0" />
+                    app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -230,8 +255,8 @@
 
                 <Button
                     android:id="@+id/user_admin"
-                    android:layout_width="91dp"
-                    android:layout_height="42dp"
+                    android:layout_width="71dp"
+                    android:layout_height="49dp"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
@@ -240,11 +265,11 @@
                     android:text="Promover a Admin"
                     android:textColor="@color/black"
                     android:textSize="14dp"
-                    app:layout_constraintBottom_toTopOf="@+id/imagdeViasas"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/view2"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0" />
+                    app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
 
@@ -286,8 +311,8 @@
 
                 <Button
                     android:id="@+id/gestion_tickets"
-                    android:layout_width="96dp"
-                    android:layout_height="41dp"
+                    android:layout_width="78dp"
+                    android:layout_height="43dp"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
@@ -296,11 +321,11 @@
                     android:text="Gestionar Tickets"
                     android:textColor="@color/black"
                     android:textSize="14dp"
-                    app:layout_constraintBottom_toTopOf="@+id/tiketsa"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/view34"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0" />
+                    app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -334,8 +359,8 @@
 
                 <Button
                     android:id="@+id/btnManageUsers"
-                    android:layout_width="108dp"
-                    android:layout_height="41dp"
+                    android:layout_width="66dp"
+                    android:layout_height="44dp"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
@@ -344,6 +369,7 @@
                     android:text="Gestionar Usuarios"
                     android:textColor="@color/black"
                     android:textSize="14dp"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/gestionuser"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/view3"
@@ -390,16 +416,17 @@
 
                 <Button
                     android:id="@+id/btnWorkerManagement"
-                    android:layout_width="108dp"
-                    android:layout_height="41dp"
-                    android:layout_marginStart="10dp"
+                    android:layout_width="88dp"
+                    android:layout_height="42dp"
+                    android:layout_marginStart="15dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
                     android:background="@android:color/transparent"
                     android:padding="0dp"
-                    android:text="Gestionar Personal"
+                    android:text="Gestionar Trabajadores"
                     android:textColor="@color/black"
                     android:textSize="14dp"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/getionpersonal"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/view4"
@@ -438,8 +465,8 @@
 
                 <Button
                     android:id="@+id/btnListaUser"
-                    android:layout_width="98dp"
-                    android:layout_height="42dp"
+                    android:layout_width="64dp"
+                    android:layout_height="44dp"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
@@ -448,6 +475,7 @@
                     android:text="Lista de Usuarios"
                     android:textColor="@color/black"
                     android:textSize="14dp"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/listuserss"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/view5"
@@ -494,7 +522,7 @@
 
                 <Button
                     android:id="@+id/btnReportes"
-                    android:layout_width="108dp"
+                    android:layout_width="66dp"
                     android:layout_height="41dp"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="5dp"
@@ -504,6 +532,7 @@
                     android:text="Reportes"
                     android:textColor="@color/black"
                     android:textSize="14dp"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/reportaa"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/view6"
@@ -541,10 +570,10 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <Button
-                    android:id="@+id/button5"
-                    android:layout_width="87dp"
-                    android:layout_height="39dp"
-                    android:layout_marginStart="10dp"
+                    android:id="@+id/btnAI"
+                    android:layout_width="92dp"
+                    android:layout_height="41dp"
+                    android:layout_marginStart="15dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="20dp"
                     android:background="@android:color/transparent"
@@ -552,6 +581,7 @@
                     android:text="Predicciones IA"
                     android:textColor="@color/black"
                     android:textSize="14dp"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/iapred"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/view7"
@@ -560,346 +590,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </LinearLayout>
-
-
-    <!--
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
-        android:layout_width="match_parent"
-        android:layout_height="409dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="0dp"
-        android:background="@drawable/adminborder">
-
-
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="412dp"
-            android:layout_height="159dp"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:layout_editor_absoluteY="71dp">
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imageView2as"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/amasuser" />
-
-                    <Button
-                        android:id="@+id/btnCrearUsuario"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Crear Usuario"
-                        android:textSize="12dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.487"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.808" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imagdeViasas"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/aadmin" />
-
-                    <Button
-                        android:id="@+id/user_admin"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Promover a Admin"
-                        android:textSize="12dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.487"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.808" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imagdeAdmin"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/atiket" />
-
-                    <Button
-                        android:id="@+id/gestion_tickets"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Gestionar Tickets"
-                        android:textSize="12dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.487"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.808" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/linearLayout2"
-            android:layout_width="413dp"
-            android:layout_height="150dp"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout">
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imagdeAdmias"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/auser" />
-
-                    <Button
-                        android:id="@+id/btnManageUsers"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Gestionar Usuarios"
-                        android:textSize="12dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.487"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.808" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imagdeVstos"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/agesttraba" />
-
-                    <Button
-                        android:id="@+id/btnWorkerManagement"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Gestionar Personal"
-                        android:textSize="12dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.487"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.808" />
-                </LinearLayout>
-
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imagdeVstosxd"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/alistauser" />
-
-                    <Button
-                        android:id="@+id/btnListaUser"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Lista de Usuarios"
-                        android:textSize="12dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.487"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.808" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:id="@+id/linearLayout3"
-            android:layout_width="413dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imageReport"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/aadmin" />
-
-                    <Button
-                        android:id="@+id/btnReportes"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Reportes"
-                        android:textSize="12dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/imagePassword"
-                        android:layout_width="46dp"
-                        android:layout_height="53dp"
-                        app:srcCompat="@drawable/aadmin" />
-
-                    <Button
-                        android:id="@+id/btnChangePassword"
-                        android:layout_width="107dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/admincerrar"
-                        android:text="Cambiar Contraseña"
-                        android:textSize="12dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <Button
-                android:id="@+id/btnCerrarSesion"
-                android:layout_width="175dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_weight="1"
-                android:background="@drawable/admincerrar"
-                android:backgroundTint="#068f41"
-                android:radius="6dp"
-                android:text="Cerrar Sesión"
-                android:textSize="14sp"
-                android:tint="#068f41" />
-
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    -->
 
 
 </RelativeLayout>

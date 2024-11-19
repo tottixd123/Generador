@@ -1,13 +1,17 @@
 package com.example.gemerador.User_Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.gemerador.Admin.AdminMenu;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -20,7 +24,7 @@ import java.util.Map;
 
 public class AdminUserManager extends AppCompatActivity {
     private EditText emailEditText;
-    private Button promoteButton;
+    private Button promoteButton, btnRManager;
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
     private static final String TAG = "AdminUserManager";
@@ -38,12 +42,24 @@ public class AdminUserManager extends AppCompatActivity {
     private void initializeViews() {
         emailEditText = findViewById(R.id.emailEditText);
         promoteButton = findViewById(R.id.promoteButton);
-        Button backButton = findViewById(R.id.backButton);
+        btnRManager = findViewById(R.id.btnRManager2);
 
-        if (backButton != null) {
-            backButton.setOnClickListener(v -> finish());
+        btnRManager.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(AdminUserManager.this, AdminMenu.class);
+                startActivity(intent);
+            }
+        });
+        /*
+        if (btnRManager != null) {
+            btnRManager.setOnClickListener(v -> finish());
         }
+
+         */
+
     }
+
 
     private void setupFirebase() {
         mAuth = FirebaseAuth.getInstance();

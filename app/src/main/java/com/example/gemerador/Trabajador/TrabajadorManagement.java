@@ -1,12 +1,17 @@
 package com.example.gemerador.Trabajador;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.gemerador.Admin.AdminMenu;
 import com.example.gemerador.R;
+import com.example.gemerador.User_Admin.AdminUserManager;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -21,6 +26,7 @@ public class TrabajadorManagement extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TrabajadorManagementAdapter adapter;
     private DatabaseReference usuariosRef;
+    private Button regTraba;
     private List<Map<String, String>> userList;
 
     @Override
@@ -35,6 +41,14 @@ public class TrabajadorManagement extends AppCompatActivity {
 
     private void initializeViews() {
         recyclerView = findViewById(R.id.recyclerView);
+        regTraba = findViewById(R.id.btnTrabajo);
+        regTraba.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(TrabajadorManagement.this, AdminMenu.class);
+                startActivity(intent);
+            }
+        });
         usuariosRef = FirebaseDatabase.getInstance().getReference("Usuarios");
         userList = new ArrayList<>();
     }

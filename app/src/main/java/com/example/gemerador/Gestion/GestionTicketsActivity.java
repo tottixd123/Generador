@@ -1,10 +1,12 @@
 package com.example.gemerador.Gestion;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -15,9 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.gemerador.Admin.AdminMenu;
 import com.example.gemerador.R;
 import com.example.gemerador.Adapter.TicketAdapter;
 import com.example.gemerador.Data_base.Ticket;
+import com.example.gemerador.User_Admin.AdminUserManager;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -50,6 +54,7 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
     private Spinner spinnerWorkers;
     private Spinner spinnerStatus;
     private Spinner spinnerPriority;
+    private Button RegTiker;
     private SwipeRefreshLayout swipeRefreshLayout;
 
 
@@ -88,6 +93,14 @@ public class GestionTicketsActivity extends AppCompatActivity implements TicketA
         spinnerStatus = findViewById(R.id.spinnerStatus);
         spinnerPriority = findViewById(R.id.spinnerPriority);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        RegTiker = findViewById(R.id.btntik);
+        RegTiker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GestionTicketsActivity.this, AdminMenu.class);
+                startActivity(intent);
+            }
+        });
 
         dbRef = FirebaseDatabase.getInstance().getReference();
         ticketList = new ArrayList<>();
