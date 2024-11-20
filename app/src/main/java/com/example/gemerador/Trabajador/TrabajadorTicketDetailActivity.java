@@ -1,5 +1,6 @@
 package com.example.gemerador.Trabajador;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -44,7 +45,7 @@ public class TrabajadorTicketDetailActivity extends AppCompatActivity {
     private TextView tvStatus, tvPriority, tvComments;
     private ImageView ivTicketImage;
     private EditText etNewComment;
-    private Button btnUpdateStatus, btnAddComment;
+    private Button btnUpdateStatus, btnAddComment, regreDetalles;
     private Spinner spinnerStatus;
     private DatabaseReference mDatabase;
     private Ticket currentTicket;
@@ -74,6 +75,14 @@ public class TrabajadorTicketDetailActivity extends AppCompatActivity {
         btnUpdateStatus = findViewById(R.id.btnUpdateStatus);
         btnAddComment = findViewById(R.id.btnAddComment);
         spinnerStatus = findViewById(R.id.spinnerStatus);
+        regreDetalles =findViewById(R.id.btnregDetaill);
+        regreDetalles.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(TrabajadorTicketDetailActivity.this,TrabajadorMenu.class);
+                startActivity(intent);
+            }
+        });
 
         // Setup status spinner with valid statuses
         String[] statuses = {

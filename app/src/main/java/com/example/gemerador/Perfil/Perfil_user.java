@@ -13,8 +13,12 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.gemerador.Admin.AdminMenu;
+import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.R;
+import com.example.gemerador.User_Admin.AdminUserManager;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,7 +27,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class Perfil_user extends AppCompatActivity {
     private TextView usernameTextView, emailTextView;
     private Switch notificationSwitch;
-    private Button logoutButton, iniciobtn,changePasswordButton;
+    private Button logoutButton, iniciobtn,changePasswordButton,regeUser;
     private ImageView bellIcon;
     private FirebaseAuth mAuth;
     private static final String PREFS_NAME = "NotificationPrefs";
@@ -48,12 +52,21 @@ public class Perfil_user extends AppCompatActivity {
         logoutButton = findViewById(R.id.logoutButton);
         changePasswordButton = findViewById(R.id.changePasswordButton);
         bellIcon = findViewById(R.id.imageView4);
+        regeUser = findViewById(R.id.btnpUser);
+        regeUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Perfil_user.this, Inicio_User.class);
+                startActivity(intent);
+            }
+        });
 
         // Cargar estado de notificaciones
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         boolean notificationsEnabled = prefs.getBoolean("notificationsEnabled", true);
         notificationSwitch.setChecked(notificationsEnabled);
     }
+
 
     private void setupClickListeners() {
         logoutButton.setOnClickListener(v -> {
@@ -79,9 +92,9 @@ public class Perfil_user extends AppCompatActivity {
         EditText confirmPasswordEt = dialogView.findViewById(R.id.confirmPasswordEt);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle("Cambiar Contraseña")
+                .setTitle("")
                 .setView(dialogView)
-                .setPositiveButton("Cambiar", null)
+                .setPositiveButton("Editar Contraseña", null)
                 .setNegativeButton("Cancelar", null);
 
         AlertDialog dialog = builder.create();

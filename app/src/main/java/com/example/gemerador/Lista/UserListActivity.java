@@ -1,9 +1,11 @@
 package com.example.gemerador.Lista;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -13,7 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.gemerador.Admin.AdminMenu;
 import com.example.gemerador.R;
+import com.example.gemerador.User_Admin.AdminUserManager;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -32,6 +36,7 @@ public class UserListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private UserListAdapter adapter;
     private ProgressBar progressBar;
+    private Button regreUser;
     private DatabaseReference mDatabase;
     private List<UserModel> userList;
     int color;
@@ -47,10 +52,20 @@ public class UserListActivity extends AppCompatActivity {
         // Initialize views
         recyclerView = findViewById(R.id.recyclerViewUsers);
         progressBar = findViewById(R.id.progressBar);
+
         userList = new ArrayList<>();
         adapter = new UserListAdapter(userList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        regreUser = findViewById(R.id.btnLisUsuario);
+        regreUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(UserListActivity.this, AdminMenu.class);
+                startActivity(intent);
+            }
+        });
+
 
         loadUsers();
     }

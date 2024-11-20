@@ -25,6 +25,7 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+
 import java.util.List;
 
 public class AdminMenu extends AppCompatActivity {
@@ -148,9 +149,9 @@ public class AdminMenu extends AppCompatActivity {
         EditText confirmPasswordEt = dialogView.findViewById(R.id.confirmPasswordEt);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle("Cambiar Contraseña")
+                .setTitle("")
                 .setView(dialogView)
-                .setPositiveButton("Cambiar", null)
+                .setPositiveButton("Editar Contraseña", null)
                 .setNegativeButton("Cancelar", null);
 
         AlertDialog dialog = builder.create();

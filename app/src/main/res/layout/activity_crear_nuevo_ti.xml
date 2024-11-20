@@ -31,7 +31,7 @@
             android:text="Crear Ticket"
             android:textStyle="bold"
             android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:textSize="20sp" />
 
     </RelativeLayout>
 

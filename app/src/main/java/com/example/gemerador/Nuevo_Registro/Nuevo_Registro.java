@@ -41,11 +41,10 @@ public class Nuevo_Registro extends AppCompatActivity {
     );
     // Lista de cargos
     private final List<String> cargos = Arrays.asList(
-            "Jefe de Area",
+            "Jefe de Área",
             "Secretario/a",
             "Otro"
     );
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

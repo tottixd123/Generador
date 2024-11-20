@@ -1,5 +1,6 @@
 package com.example.gemerador.Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
@@ -11,6 +12,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gemerador.R;
+import com.example.gemerador.User_Admin.AdminUserManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,7 +25,7 @@ import java.util.Map;
 
 public class Crear_User extends AppCompatActivity {
     private EditText etNombre, etEmail, etPassword, etArea, etCargo;
-    private Button btnCrearCuenta;
+    private Button btnCrearCuenta,btnCUserclas;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
     private CheckBox cbEsAdmin;
@@ -47,6 +49,15 @@ public class Crear_User extends AppCompatActivity {
         etCargo = findViewById(R.id.etCargo);
         btnCrearCuenta = findViewById(R.id.btnCrearCuenta);
         cbEsAdmin = findViewById(R.id.cbEsAdmin);
+        btnCUserclas = findViewById(R.id.btnCUser);
+
+        btnCUserclas.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Crear_User.this, AdminMenu.class);
+                startActivity(intent);
+            }
+        });
     }
 
 

@@ -113,10 +113,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
+                android:padding="0dp"
                 android:layout_weight="1"
                 android:background="@drawable/admincerrar"
-                android:text="Actualizar Estado"
-                android:visibility="gone" />
+                android:text="ACTUALIZAR ESTADO"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/btnUpdatePriority"
@@ -124,10 +125,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
+                android:padding="0dp"
                 android:layout_weight="1"
                 android:background="@drawable/admincerrar"
-                android:text="Actualizar Prioridad"
-                android:visibility="gone" />
+                android:text="ACTUALIZAR PRIORIDAD"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/btnAssignWorker"
@@ -135,9 +137,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:background="@drawable/admincerrar"
-                android:text="Asignar Trabajador"
-                android:visibility="gone" />
+                android:text="ASIGNAR TRABAJADOR"
+                android:visibility="gone"/>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

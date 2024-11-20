@@ -117,9 +117,9 @@ public class TrabajadorMenu extends AppCompatActivity {
         EditText confirmPasswordEt = dialogView.findViewById(R.id.confirmPasswordEt);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle("Cambiar Contraseña")
+                .setTitle("")
                 .setView(dialogView)
-                .setPositiveButton("Cambiar", null)
+                .setPositiveButton("Editar Contraseña", null)
                 .setNegativeButton("Cancelar", null);
 
         AlertDialog dialog = builder.create();

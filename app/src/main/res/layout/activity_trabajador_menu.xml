@@ -31,9 +31,10 @@
         android:id="@+id/buttonsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:orientation="vertical"
-        android:layout_marginBottom="24dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="16dp">
 
         <Button
             android:id="@+id/btnChangePassword"
@@ -41,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/admincerrar"
-            android:text="Cambiar Contraseña" />
+            android:text="Editar Contraseña" />
 
         <Button
             android:id="@+id/btnCerrarSesion"

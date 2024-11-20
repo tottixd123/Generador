@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.gemerador.Adapter.SolicitudAdapter;
 import com.example.gemerador.Models.Solicitud;
 import com.example.gemerador.R;
+import com.example.gemerador.User_Admin.AdminUserManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -38,6 +40,7 @@ public class GestionSolicitudesActivity extends AppCompatActivity implements Sol
     private List<Solicitud> solicitudes;
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
+    private Button RegresoSol;
     private ValueEventListener solicitudesListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,14 @@ public class GestionSolicitudesActivity extends AppCompatActivity implements Sol
         recyclerView = findViewById(R.id.recyclerViewSolicitudes);
         progressBar = findViewById(R.id.progressBar);
         tvNoSolicitudes = findViewById(R.id.tvNoSolicitudes);
+        RegresoSol = findViewById(R.id.btnsolicutd);
+        RegresoSol.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GestionSolicitudesActivity.this, AdminMenu.class);
+                startActivity(intent);
+            }
+        });
     }
     private void initializeFirebase() {
         mAuth = FirebaseAuth.getInstance();
