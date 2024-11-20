@@ -5,7 +5,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     android:background="#FFFFFF"
     tools:context=".Admin.AdminMenu">
 
@@ -372,24 +371,56 @@
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
+            <androidx.cardview.widget.CardView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp">
 
-            <Button
-                android:id="@+id/btnCerrarSesion"
-                android:layout_width="175dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_weight="1"
-                android:background="@drawable/admincerrar"
-                android:backgroundTint="#068f41"
-                android:radius="6dp"
-                android:text="Cerrar Sesión"
-                android:textSize="14sp"
-                android:tint="#068f41" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/imageAI"
+                        android:layout_width="46dp"
+                        android:layout_height="53dp"
+                        app:srcCompat="@drawable/aadmin" /> <!-- Usar un ícono apropiado -->
+
+                    <Button
+                        android:id="@+id/btnAI"
+                        android:layout_width="107dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/admincerrar"
+                        android:text="Gestión IA"
+                        android:textSize="12dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
 
         </LinearLayout>
 
+        <Button
+            android:id="@+id/btnCerrarSesion"
+            android:layout_width="175dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_weight="1"
+            android:background="@drawable/admincerrar"
+            android:backgroundTint="#068f41"
+            android:radius="6dp"
+            android:text="Cerrar Sesión"
+            android:textSize="14sp"
+            android:tint="#068f41"
+            tools:layout_editor_absoluteX="137dp"
+            tools:layout_editor_absoluteY="3dp" />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
 </RelativeLayout>

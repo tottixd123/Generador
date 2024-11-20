@@ -13,7 +13,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     }
@@ -25,6 +24,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+    sourceSets {
+        getByName("main") {
+            assets.srcDirs(listOf("src/main/assets"))
         }
     }
     packagingOptions {
@@ -39,10 +43,23 @@ android {
     buildFeatures {
         viewBinding = true
     }
-
+    aaptOptions {
+        noCompress += "tflite"
+    }
 }
 
 dependencies {
+    // Retrofit
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.1")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.1")
+    //Dependencias para inteligencia artificial
+    implementation("org.tensorflow:tensorflow-lite:2.13.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
+    implementation("org.apache.commons:commons-math3:3.6.1")
+    implementation("androidx.work:work-runtime:2.8.1")
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-analytics")
@@ -58,10 +75,8 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation(libs.activity)
-
     // Material Design
     implementation("com.google.android.material:material:1.10.0")
-
     // Networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0") // Mantener solo la versión más reciente
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0") // Actualizar a la misma versión

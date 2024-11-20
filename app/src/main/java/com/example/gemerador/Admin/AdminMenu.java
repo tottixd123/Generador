@@ -11,6 +11,8 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gemerador.Gestion.GestionTicketsActivity;
+import com.example.gemerador.IA.TicketAIActivity;
+import com.example.gemerador.IA.TicketAIManager;
 import com.example.gemerador.Lista.UserListActivity;
 import com.example.gemerador.MainActivity;
 import com.example.gemerador.Models.Solicitud;
@@ -123,6 +125,10 @@ public class AdminMenu extends AppCompatActivity {
 
         gestionTickets.setOnClickListener(v ->
                 startActivity(new Intent(this, GestionTicketsActivity.class)));
+        //Agregar el boton de prediccion IA
+        Button btnAI = findViewById(R.id.btnAI);
+        btnAI.setOnClickListener(v ->
+                startActivity(new Intent(this, TicketAIActivity.class)));
         // Agregar el botón de cambiar contraseña
         Button btnChangePassword = findViewById(R.id.btnChangePassword);
         btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());

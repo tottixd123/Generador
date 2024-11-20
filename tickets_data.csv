@@ -1,0 +1,15 @@
+Area_Problema;Prioridad;Tiempo_resolució;Trabajador;Estatus
+Mantenimiento de impresora;Alta;61;1;Pendiente
+Mantenimiento de ordenador;Media;67;2;En Proceso
+Cambio de cable Internet;Baja;89;1;Terminado
+Registro SIGA;Media;54;1;Terminado
+Registro SIAF;Alta;90;1;Terminado
+Instalacion de aplicaciones;Alta;987;1;Terminado
+Mantenimiento de impresora;Media;645;1;En Proceso
+Registro SIGA;Alta;523;1;En Proceso
+Mantenimiento de impresora;Media;34;2;En Proceso
+Cambio de cable Internet;Alta;67;2;En Proceso
+Registro SIGA;Media;54;2;Pendiente
+Cambio de cable Internet;Media;234;2;Pendiente
+Mantenimiento de impresora;Alta;65;2;Pendiente
+Registro SIGA;Alta;76;2;Pendiente

@@ -57,4 +57,21 @@
     <string name="error_adding_comment">Error al agregar comentario: %1$s</string>
     <string name="update_status">Actualizar Estado</string>
     <string name="add_comment">Agregar Comentario</string>
+    <!-- AI Management Strings -->
+    <string name="ai_management">Gestión de IA</string>
+    <string name="total_predictions">Total de predicciones: %d</string>
+    <string name="success_rate">Tasa de éxito: %.1f%%</string>
+    <string name="worker_performance">Rendimiento de Trabajadores</string>
+    <string name="prediction_history">Historial de Predicciones</string>
+    <string name="model_config">Configuración del Modelo</string>
+    <string name="auto_training">Entrenamiento automático</string>
+    <string name="force_training">Forzar entrenamiento</string>
+    <string name="new_prediction">Nueva predicción</string>
+    <string name="worker_stats">Estadísticas de %s</string>
+    <string name="loading">Cargando…</string>
+    <string name="error_loading_data">Error al cargar datos</string>
+    <string name="training_started">Entrenamiento iniciado</string>
+    <string name="training_completed">Entrenamiento completado</string>
+    <string name="training_error">Error en el entrenamiento</string>
+    <string name="reiniciar">Reiniciar Estadísticas</string>
 </resources>

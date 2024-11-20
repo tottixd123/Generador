@@ -269,4 +269,34 @@ public class Ticket {
         return "Administrador".equals(userRole) ||
                 (isAssignedTo(userId) && "Trabajador".equals(userRole));
     }
+    public boolean hasPrediction() {
+        // Retorna true si este ticket tiene una predicción asociada
+        return getPredictedTime() > 0;
+    }
+
+    public boolean isPredictionSuccessful() {
+        // Implementa la lógica para determinar si la predicción fue exitosa
+        // Por ejemplo, comparando el tiempo predicho con el tiempo real
+        if (!hasPrediction() || getStatus().equals("Pending")) {
+            return false;
+        }
+
+        long predictedTime = getPredictedTime();
+        long actualTime = getActualResolutionTime();
+
+        // Considera exitosa si la diferencia es menor al 20%
+        return Math.abs(predictedTime - actualTime) <= (predictedTime * 0.2);
+    }
+
+    public long getPredictedTime() {
+        // Retorna el tiempo predicho para este ticket
+        // Implementa según tu modelo de datos
+        return 0;
+    }
+
+    public long getActualResolutionTime() {
+        // Retorna el tiempo real que tomó resolver el ticket
+        // Implementa según tu modelo de datos
+        return 0;
+    }
 }

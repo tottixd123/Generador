@@ -3,6 +3,8 @@
     <style name="Base.Theme.Gemerador" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:itemTextAppearance">@style/MenuTextStyle</item>
     </style>
 
     <style name="Theme.Gemerador" parent="Base.Theme.Gemerador" />
@@ -34,5 +36,8 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">4dp</item>
         <item name="android:textSize">14sp</item>
+    </style>
+    <style name="MenuTextStyle">
+        <item name="android:textColor">@android:color/black</item>
     </style>
 </resources>

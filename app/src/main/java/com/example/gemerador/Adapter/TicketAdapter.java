@@ -29,6 +29,13 @@ import com.example.gemerador.Crear_Ti.TicketDetail;
 import com.example.gemerador.Data_base.Ticket;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,12 +61,14 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     private Context context;
     private String userRole;
     private TicketActionListener listener;
+    private DatabaseReference usersRef;
 
     public TicketAdapter(List<Ticket> tickets, String userRole, TicketActionListener listener) {
         this.tickets = new ArrayList<>(tickets);
         this.filteredTickets = new ArrayList<>(tickets);
         this.userRole = userRole;
         this.listener = listener;
+        this.usersRef = FirebaseDatabase.getInstance().getReference().child("usuarios");
     }
 
     // Constructor simple para compatibilidad
@@ -70,6 +79,27 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
     public void setTickets(List<Ticket> newTickets) {
         this.tickets = new ArrayList<>(newTickets);
         this.filteredTickets = new ArrayList<>(newTickets);
+        notifyDataSetChanged();
+    }
+    // Método principal para aplicar todos los filtros
+    public void applyFilters(String workerId, String status, String priority) {
+        filteredTickets.clear();
+
+        // Aplicar todos los filtros de una vez
+        for (Ticket ticket : tickets) {
+            boolean matchesWorker = workerId.isEmpty() ||
+                    (ticket.getAssignedWorkerId() != null &&
+                            ticket.getAssignedWorkerId().equals(workerId));
+            boolean matchesStatus = status.isEmpty() ||
+                    ticket.getStatus().equals(status);
+            boolean matchesPriority = priority.isEmpty() ||
+                    ticket.getPriority().equals(priority);
+
+            if (matchesWorker && matchesStatus && matchesPriority) {
+                filteredTickets.add(ticket);
+            }
+        }
+
         notifyDataSetChanged();
     }
 
@@ -115,17 +145,74 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
                 .setDuration(300)
                 .start();
     }
+    public void searchTickets(String query) {
+        filteredTickets.clear();
+        if (query == null || query.isEmpty()) {
+            filteredTickets.addAll(tickets);
+        } else {
+            String searchQuery = query.toLowerCase().trim();
+            for (Ticket ticket : tickets) {
+                if (matchesSearchCriteria(ticket, searchQuery)) {
+                    filteredTickets.add(ticket);
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
 
+    private boolean matchesSearchCriteria(Ticket ticket, String query) {
+        return (ticket.getTicketNumber() != null && ticket.getTicketNumber().toLowerCase().contains(query)) ||
+                (ticket.getCreatedBy() != null && ticket.getCreatedBy().toLowerCase().contains(query)) ||
+                (ticket.getProblemSpinner() != null && ticket.getProblemSpinner().toLowerCase().contains(query)) ||
+                (ticket.getArea_problema() != null && ticket.getArea_problema().toLowerCase().contains(query)) ||
+                (ticket.getDetalle() != null && ticket.getDetalle().toLowerCase().contains(query)) ||
+                (ticket.getAssignedWorkerName() != null && ticket.getAssignedWorkerName().toLowerCase().contains(query));
+    }
     private void setupBasicInfo(@NonNull ViewHolder holder, Ticket ticket) {
         holder.tvTicketNumber.setText("Ticket #" + safeString(ticket.getTicketNumber(), "Sin número"));
-        holder.tvCreator.setText("Creado por: " + safeString(ticket.getCreatedBy(), "Usuario desconocido"));
+        // Obtener el nombre del usuario a partir del email
+        String email = safeString(ticket.getCreatedBy(), "");
+        getUserNameFromEmail(email, holder.tvCreator);
         holder.tvDate.setText("Fecha: " + safeString(ticket.getCreationDate(), "Fecha no disponible"));
         holder.tvProblemType.setText("Problema: " + safeString(ticket.getProblemSpinner(), "No especificado"));
         holder.tvArea.setText("Área: " + safeString(ticket.getArea_problema(), "No especificada"));
         holder.tvDetails.setText("Detalle: " + safeString(ticket.getDetalle(), "Sin detalles"));
         holder.tvPriority.setText("Prioridad: " + safeString(ticket.getPriority(), "Normal"));
     }
-
+    private void getUserNameFromEmail(String email, final TextView textView) {
+        if (email.isEmpty()) {
+            textView.setText("Creado por: Usuario desconocido");
+            return;
+        }
+        Query query = usersRef.orderByChild("email").equalTo(email);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                boolean foundUser = false;
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                        String nombre = userSnapshot.child("nombre").getValue(String.class);
+                        if (nombre != null && !nombre.isEmpty()) {
+                            textView.setText("Creado por: " + nombre);
+                            foundUser = true;
+                            break;
+                        }
+                    }
+                }
+                if (!foundUser) {
+                    // Si no se encuentra el usuario o no tiene nombre, mostrar el email sin dominio
+                    String nombrePorDefecto = email.split("@")[0];
+                    textView.setText("Creado por: " + nombrePorDefecto);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // En caso de error, mostrar el email sin dominio
+                String nombrePorDefecto = email.split("@")[0];
+                textView.setText("Creado por: " + nombrePorDefecto);
+            }
+        });
+    }
     private void setupStatusAndWorkerInfo(@NonNull ViewHolder holder, Ticket ticket) {
         // Configurar estado y color
         String status = safeString(ticket.getStatus(), "Pendiente");
@@ -354,37 +441,31 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder
         return filteredTickets != null ? filteredTickets.size() : 0;
     }
 
-    // Métodos de filtrado
-    public void searchTickets(String query) {
-        filteredTickets.clear();
-        if (query.isEmpty()) {
-            filteredTickets.addAll(tickets);
-        } else {
-            query = query.toLowerCase();
-            for (Ticket ticket : tickets) {
-                if (ticket.getTicketNumber().toLowerCase().contains(query) ||
-                        ticket.getCreatedBy().toLowerCase().contains(query) ||
-                        ticket.getProblemSpinner().toLowerCase().contains(query) ||
-                        ticket.getArea_problema().toLowerCase().contains(query)) {
-                    filteredTickets.add(ticket);
-                }
-            }
-        }
-        notifyDataSetChanged();
-    }
-
     public void filterByUser(String userId) {
-        filteredTickets.clear();filteredTickets.clear();
+        // Limpiar la lista filtrada solo una vez
+        filteredTickets.clear();
+
+        // Si no hay userId para filtrar, mostrar todos los tickets
         if (userId == null || userId.isEmpty()) {
             filteredTickets.addAll(tickets);
         } else {
+            // Filtrar tickets por userId
             for (Ticket ticket : tickets) {
-                if (ticket.getUserId().equals(userId)) {
+                if (ticket.getUserId() != null && ticket.getUserId().equals(userId)) {
                     filteredTickets.add(ticket);
                 }
             }
         }
+        // Notificar cambios al RecyclerView
         notifyDataSetChanged();
     }
-
+    public void clearFilters() {
+        filteredTickets.clear();
+        filteredTickets.addAll(tickets);
+        notifyDataSetChanged();
+    }
+    private boolean meetsFilterCriteria(Ticket ticket) {
+        // Aquí puedes agregar la lógica específica de tus filtros actuales
+        return true; // Por defecto acepta todos los tickets
+    }
 }

@@ -8,10 +8,17 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import static com.example.gemerador.Data_base.Ticket.STATUS_COMPLETED;
+import static com.example.gemerador.Data_base.Ticket.STATUS_PENDING;
+import static com.example.gemerador.Data_base.Ticket.PRIORITY_NORMAL;
+import com.example.gemerador.Data_base.Ticket;
+import com.example.gemerador.IA.OnlineTicketModel;
+import com.example.gemerador.IA.TicketDataCollector;
+import com.example.gemerador.IA.TicketMLData;
+import com.example.gemerador.IA.TicketPredictor;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -50,11 +57,14 @@ public class TicketReportActivity extends AppCompatActivity {
     private TextView tvTodayTickets, tvDailyResolutionRate;
     private Map<String, Integer> commonIncidents = new HashMap<>();
     private Map<String, Long> averageResolutionTimes = new HashMap<>();
+    private TicketPredictor predictor;
+    private TicketDataCollector dataCollector;
+    private OnlineTicketModel model;
+
     private static class WorkerStats {
         public int totalTickets;
         public int resolvedTickets;
         public long averageResolutionTime;
-
         public WorkerStats() {
             totalTickets = 0;
             resolvedTickets = 0;
@@ -68,6 +78,14 @@ public class TicketReportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_report);
         workerStats = new HashMap<>();
+        try {
+            predictor = new TicketPredictor(this);
+        } catch (IOException e) {
+            Log.e("TicketReportActivity", "Error al cargar el modelo de IA", e);
+        }
+
+        dataCollector = new TicketDataCollector();
+        model = new OnlineTicketModel(4);
 
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
@@ -75,25 +93,120 @@ public class TicketReportActivity extends AppCompatActivity {
             finish();
             return;
         }
+        dataCollector = new TicketDataCollector();
+        model = new OnlineTicketModel(4); // 5 es el número de características en TicketMLData
+
         initializeViews();
         setupToolbar();
         checkAdminAndLoadData();
     }
+    private void makePrediction(Ticket ticket) {
+        if (predictor == null) return;
+
+        TicketMLData mlData = new TicketMLData(
+                ticket.getArea_problema(),
+                ticket.getPriority(),
+                calculateResolutionTime(ticket),
+                ticket.getAssignedWorkerId(),
+                ticket.getStatus().equals(Ticket.STATUS_COMPLETED)
+        );
+
+        float prediction = predictor.predict(mlData);
+
+        if (prediction > 0.7) {
+            recommendWorker(ticket);
+        } else {
+            // Manejar casos de baja probabilidad de éxito
+            Log.d(TAG, "Baja probabilidad de éxito para el ticket: " + ticket.getTicketNumber());
+        }
+    }
+    private void processNewTicket(Ticket ticket) {
+        dataCollector.addTicketData(ticket);
+        makePrediction(ticket);
+    }
+    private void updateModelWithResolvedTicket(Ticket ticket) {
+        TicketMLData mlData = new TicketMLData(
+                ticket.getArea_problema(),
+                ticket.getPriority(),
+                calculateResolutionTime(ticket),
+                ticket.getAssignedWorkerId(),
+                ticket.getStatus().equals(Ticket.STATUS_COMPLETED)
+        );
+
+        model.update(mlData, ticket.getStatus().equals(Ticket.STATUS_COMPLETED));
+    }
+    private void trainModelPeriodically() {
+        List<TicketMLData> trainingData = dataCollector.getTrainingData();
+        for (TicketMLData data : trainingData) {
+            model.update(data, data.isResolved());
+        }
+    }
+    private long calculateResolutionTime(Ticket ticket) {
+        // Implementa el cálculo del tiempo de resolución
+        // Por ejemplo:
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        try {
+            Date creationDate = sdf.parse(ticket.getCreationDate());
+            Date resolutionDate = sdf.parse(ticket.getLastUpdated());
+            return resolutionDate.getTime() - creationDate.getTime();
+        } catch (ParseException e) {
+            Log.e(TAG, "Error al calcular el tiempo de resolución", e);
+            return 0;
+        }
+    }
+    private void recommendWorker(Ticket ticket) {
+        // Implementa la lógica para recomendar un trabajador
+        // basándote en la predicción y otros factores
+        List<String> availableWorkers = getAvailableWorkers();
+        String recommendedWorker = model.recommendWorker(availableWorkers);
+        Log.d(TAG, "Trabajador recomendado para el ticket " + ticket.getTicketNumber() + ": " + recommendedWorker);
+    }
+    private List<String> getAvailableWorkers() {
+        // Implementa la lógica para obtener los trabajadores disponibles
+        // Por ejemplo:
+        return new ArrayList<>(workerStats.keySet());
+    }
     private void checkAdminAndLoadData() {
+        if (currentUser == null) {
+            Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         DatabaseReference userRef = FirebaseDatabase.getInstance()
                 .getReference("Usuarios")
                 .child(currentUser.getUid());
 
-        userRef.child("role").get().addOnCompleteListener(task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                userRole = task.getResult().getValue(String.class);
-                if ("Administrador".equals(userRole) || "Admin".equals(userRole)) {
+        userRef.get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.e(TAG, "Error al obtener datos de usuario", task.getException());
+                Toast.makeText(this, "Error al verificar permisos", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+
+            try {
+                if (task.getResult() == null || !task.getResult().exists()) {
+                    Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+
+                String role = task.getResult().child("role").getValue(String.class);
+                if (role == null) {
+                    Toast.makeText(this, "Rol de usuario no definido", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+
+                if ("Administrador".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role)) {
                     loadTicketStatistics();
                 } else {
                     Toast.makeText(this, "Acceso no autorizado", Toast.LENGTH_SHORT).show();
                     finish();
                 }
-            } else {
+            } catch (Exception e) {
+                Log.e(TAG, "Error al procesar datos de usuario", e);
                 Toast.makeText(this, "Error al verificar permisos", Toast.LENGTH_SHORT).show();
                 finish();
             }
@@ -126,9 +239,10 @@ public class TicketReportActivity extends AppCompatActivity {
     private void loadTicketStatistics() {
         showLoading(true);
 
+        // Añadir timeout más largo para conexiones lentas
         OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
                 .build();
 
         Request request = new Request.Builder()
@@ -140,8 +254,9 @@ public class TicketReportActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> {
+                    Log.e(TAG, "Error de conexión: " + e.getMessage());
                     Toast.makeText(TicketReportActivity.this,
-                            "Error de conexión: " + e.getMessage(),
+                            "Error al cargar los datos. Por favor, intenta de nuevo",
                             Toast.LENGTH_SHORT).show();
                     showLoading(false);
                 });
@@ -149,17 +264,26 @@ public class TicketReportActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                try {
-                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                if (!response.isSuccessful()) {
+                    runOnUiThread(() -> {
+                        Log.e(TAG, "Error de servidor: " + response.code());
+                        Toast.makeText(TicketReportActivity.this,
+                                "Error del servidor. Por favor, intenta de nuevo",
+                                Toast.LENGTH_SHORT).show();
+                        showLoading(false);
+                    });
+                    return;
+                }
 
+                try {
                     String jsonData = response.body().string();
                     JSONArray tickets = new JSONArray(jsonData);
                     processTicketData(tickets);
-
                 } catch (Exception e) {
+                    Log.e(TAG, "Error al procesar JSON: " + e.getMessage());
                     runOnUiThread(() -> {
                         Toast.makeText(TicketReportActivity.this,
-                                "Error al procesar datos: " + e.getMessage(),
+                                "Error al procesar los datos",
                                 Toast.LENGTH_SHORT).show();
                         showLoading(false);
                     });
@@ -192,16 +316,23 @@ public class TicketReportActivity extends AppCompatActivity {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
             for (int i = 0; i < ticketArray.length(); i++) {
-                JSONObject ticket = ticketArray.getJSONObject(i);
-                String status = ticket.optString("status", "").toLowerCase().trim();
-                String problem = ticket.optString("problemSpinner", "Sin categoría");
-                String workerId = ticket.optString("assignedWorkerId", "");
-                String workerName = ticket.optString("assignedWorkerName", "Sin asignar");
-                String creationDateStr = ticket.optString("creationDate", "");
-                String lastUpdatedStr = ticket.optString("lastUpdated", creationDateStr);
+                JSONObject ticketJson = ticketArray.getJSONObject(i);
+                Ticket ticket = parseTicketFromJson(ticketJson);
+
+                // Procesar nuevo ticket
+                processNewTicket(ticket);
+
+                String status = ticket.getStatus().toLowerCase().trim();
+                String problem = ticket.getArea_problema();
+                String workerId = ticket.getAssignedWorkerId();
+                String workerName = ticket.getAssignedWorkerName();
+                String creationDateStr = ticket.getCreationDate();
+                String lastUpdatedStr = ticket.getLastUpdated();
                 boolean isResolved = status.equals("resuelto") || status.equals("terminado") ||
                         status.equals("completed") || status.equals("resolved");
+
                 commonIncidents.put(problem, commonIncidents.getOrDefault(problem, 0) + 1);
+
                 if (!creationDateStr.isEmpty()) {
                     try {
                         Date creationDate = sdf.parse(creationDateStr);
@@ -232,6 +363,9 @@ public class TicketReportActivity extends AppCompatActivity {
                                                         resolutionTime) / stats.resolvedTickets;
                                     }
                                 }
+
+                                // Actualizar modelo con ticket resuelto
+                                updateModelWithResolvedTicket(ticket);
                             }
                         }
                     } catch (ParseException e) {
@@ -246,6 +380,10 @@ public class TicketReportActivity extends AppCompatActivity {
                     stats.totalTickets++;
                 }
             }
+
+            // Entrenar el modelo periódicamente
+            trainModelPeriodically();
+
             final int finalResolvedTickets = resolvedTickets;
             final int finalMonthlyTickets = monthlyTickets;
             final int finalMonthlyResolved = monthlyResolved;
@@ -267,6 +405,41 @@ public class TicketReportActivity extends AppCompatActivity {
                 showLoading(false);
             });
         }
+    }
+    private Ticket parseTicketFromJson(JSONObject ticketJson) throws JSONException {
+        if (ticketJson == null) {
+            throw new JSONException("Ticket JSON es nulo");
+        }
+
+        // Valores por defecto para campos obligatorios
+        String ticketNumber = ticketJson.optString("ticketNumber", "Sin número");
+        String problemSpinner = ticketJson.optString("problemSpinner", "Sin categoría");
+        String areaProblema = ticketJson.optString("area_problema", "Sin área");
+
+        // Crear el ticket con validación de campos nulos
+        Ticket ticket = new Ticket(
+                ticketNumber,
+                problemSpinner,
+                areaProblema,
+                ticketJson.optString("detalle", ""),
+                ticketJson.optString("imagen", ""),
+                ticketJson.optString("id", ""),
+                ticketJson.optString("createdBy", ""),
+                ticketJson.optString("creationDate",
+                        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                                .format(new Date())),
+                ticketJson.optString("userId", "")
+        );
+
+        // Establecer campos adicionales con valores por defecto
+        ticket.setStatus(ticketJson.optString("status", STATUS_PENDING));
+        ticket.setPriority(ticketJson.optString("priority", PRIORITY_NORMAL));
+        ticket.setAssignedWorkerId(ticketJson.optString("assignedWorkerId", ""));
+        ticket.setAssignedWorkerName(ticketJson.optString("assignedWorkerName", ""));
+        ticket.setLastUpdated(ticketJson.optString("lastUpdated", ""));
+        ticket.setComments(ticketJson.optString("comments", ""));
+
+        return ticket;
     }
     private void updateDailyStats(int todayTickets, int todayResolved) {
         tvTodayTickets.setText(String.valueOf(todayTickets));
