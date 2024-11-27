@@ -39,6 +39,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+
 public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.ViewHolder> {
     public interface OnTicketAddedListener {
         void onTicketAdded(Ticket ticket);

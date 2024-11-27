@@ -1,7 +1,12 @@
 package com.example.gemerador.Inicio_User;
 
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,6 +20,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.gemerador.Adapter.TicketAdapter;
@@ -53,6 +60,7 @@ import okhttp3.Response;
 public class Inicio_User extends AppCompatActivity {
     private static final String PREFS_NAME = "NotificationPrefs";
     private static final String KEY_NOTIFICATIONS = "notifications";
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 1234;
     private RecyclerView recyclerView;
     private TicketAdapter adapter;
     private List<Ticket> tickets;
@@ -69,6 +77,7 @@ public class Inicio_User extends AppCompatActivity {
     private static final String ROLE_USER = "Usuario";
     private TrabajadorService trabajadorService;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,8 +91,16 @@ public class Inicio_User extends AppCompatActivity {
         setupSearch();
         initializeNotifications();
         fetchTicketsFromMockAPI();
+        createNotificationChannel();
+        requestNotificationPermission();
     }
-
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
+            }
+        }
+    }
     private void initializeViews() {
         recyclerView = findViewById(R.id.recyclerView);
         searchEditText = findViewById(R.id.editTextText2);
@@ -627,16 +644,6 @@ public class Inicio_User extends AppCompatActivity {
                 priority
         );
     }
-
-
-    private void setupNotificationRecyclerView(RecyclerView recyclerView) {
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        List<TicketNotification> filteredNotifications = filterNotificationsByUser(notifications);
-        notificationAdapter = new TicketNotificationAdapter(filteredNotifications);
-        notificationAdapter.setTickets(tickets);
-        recyclerView.setAdapter(notificationAdapter);
-    }
-
     private void clearAllNotifications() {
         notifications.clear();
         if (notificationAdapter != null) {
@@ -668,10 +675,11 @@ public class Inicio_User extends AppCompatActivity {
 
     private void loadSavedNotifications() {
         String savedNotifications = sharedPreferences.getString(KEY_NOTIFICATIONS, "");
+        notifications.clear();
+
         if (!savedNotifications.isEmpty()) {
             try {
                 JSONArray jsonArray = new JSONArray(savedNotifications);
-                notifications.clear();
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     notifications.add(new TicketNotification(
@@ -687,8 +695,13 @@ public class Inicio_User extends AppCompatActivity {
                 e.printStackTrace();
                 loadSampleNotifications();
             }
-        } else {
+        }
+        if (notifications.isEmpty()) {
             loadSampleNotifications();
+        }
+        System.out.println("Loaded notifications count: " + notifications.size());
+        for (TicketNotification notification : notifications) {
+            System.out.println("Loaded notification: " + notification.getMessage());
         }
     }
     private void loadSampleNotifications() {
@@ -722,13 +735,24 @@ public class Inicio_User extends AppCompatActivity {
                 filtered.add(notification);
             }
         }
-        return filtered;
+        return new ArrayList<>(allNotifications);
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (trabajadorService != null) {
             trabajadorService.cleanup();
+        }
+    }
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Ticket Notifications";
+            String description = "Channel for Ticket notifications";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("ticket_channel", name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 }

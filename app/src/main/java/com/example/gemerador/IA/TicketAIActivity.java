@@ -74,8 +74,8 @@ public class TicketAIActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Gestión de IA");
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
-
         // Agregar el manejo de eventos del toolbar
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
@@ -217,13 +217,8 @@ public class TicketAIActivity extends AppCompatActivity {
                     if (stats != null) {
                         Number totalPredictions = (Number) stats.get("totalPredictions");
                         Number successRate = (Number) stats.get("successRate");
-
                         if (totalPredictions != null && successRate != null) {
                             updateStatistics(totalPredictions.intValue(), successRate.doubleValue());
-
-                            // Log para debug
-                            Log.d(TAG, String.format("Estadísticas cargadas - Total: %d, Tasa: %.2f%%",
-                                    totalPredictions.intValue(), successRate.doubleValue()));
                         }
                     }
                 } else {
@@ -374,9 +369,9 @@ public class TicketAIActivity extends AppCompatActivity {
 
             aiManager.processNewTicket(testTicket, new TicketAIManager.OnPredictionCompleteListener() {
                 @Override
-                public void onPredictionComplete(String recommendedWorker, double confidence) {
+                public void onPredictionComplete(String recommendedWorker, float confidence) {
                     runOnUiThread(() -> {
-                        String message = String.format(
+                        String message = String.format(Locale.getDefault(),
                                 "Predicción exitosa\nÁrea: %s\nPrioridad: %s\nTrabajador recomendado: %s\nConfianza: %.1f%%",
                                 testTicket.getArea_problema(),
                                 testTicket.getPriority(),
@@ -384,8 +379,6 @@ public class TicketAIActivity extends AppCompatActivity {
                                 confidence * 100
                         );
                         showSuccess(message);
-                        savePredictionToHistory(testTicket, recommendedWorker, confidence);
-                        updatePredictionStatsWithConfidence(confidence);
                     });
                 }
 
@@ -397,85 +390,6 @@ public class TicketAIActivity extends AppCompatActivity {
         } else {
             showError("El sistema de IA no está inicializado correctamente");
         }
-    }
-    private void updatePredictionStats(boolean wasSuccessful) {
-        mDatabase.child("ia_stats").runTransaction(new Transaction.Handler() {
-            @NonNull
-            @Override
-            public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                Map<String, Object> stats = (Map<String, Object>) mutableData.getValue();
-                if (stats == null) {
-                    stats = new HashMap<>();
-                    stats.put("totalPredictions", 0L);
-                    stats.put("successfulPredictions", 0L);
-                    stats.put("successRate", 0.0);
-                }
-
-                // Obtener valores actuales
-                long totalPredictions = ((Number) stats.get("totalPredictions")).longValue();
-                long successfulPredictions = ((Number) stats.get("successfulPredictions")).longValue();
-
-                // Incrementar predicciones exitosas si fue exitosa
-                if (wasSuccessful) {
-                    successfulPredictions++;
-                }
-
-                // Calcular nueva tasa de éxito
-                double successRate = (totalPredictions > 0) ?
-                        ((double) successfulPredictions / totalPredictions) * 100.0 : 0.0;
-
-                // Actualizar valores
-                stats.put("totalPredictions", totalPredictions);
-                stats.put("successfulPredictions", successfulPredictions);
-                stats.put("successRate", successRate);
-
-                Log.d(TAG, String.format("Verificación de predicción - Total: %d, Exitosas: %d, Tasa: %.2f%%, Fue exitosa: %b",
-                        totalPredictions, successfulPredictions, successRate, wasSuccessful));
-
-                mutableData.setValue(stats);
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(DatabaseError error, boolean committed, DataSnapshot snapshot) {
-                if (error != null) {
-                    Log.e(TAG, "Error al actualizar estadísticas", error.toException());
-                    return;
-                }
-                if (committed && snapshot.exists()) {
-                    Map<String, Object> stats = (Map<String, Object>) snapshot.getValue();
-                    if (stats != null) {
-                        runOnUiThread(() -> {
-                            long total = ((Number) stats.get("totalPredictions")).longValue();
-                            double rate = ((Number) stats.get("successRate")).doubleValue();
-                            updateStatistics((int) total, rate);
-                        });
-                    }
-                }
-            }
-        });
-    }
-    private void savePredictionToHistory(Ticket ticket, String recommendedWorker, double confidence) {
-        DatabaseReference historyRef = mDatabase.child("prediction_history");
-
-        // Crear el objeto de predicción
-        PredictionHistoryItem historyItem = new PredictionHistoryItem();
-        historyItem.setTicketId(ticket.getId());
-        historyItem.setAreaProblema(ticket.getArea_problema());
-        historyItem.setPriority(ticket.getPriority());
-        historyItem.setRecommendedWorker(recommendedWorker);
-        historyItem.setConfidence(confidence);
-        historyItem.setTimestamp(System.currentTimeMillis());
-        historyItem.setVerified(false);
-        historyItem.setWasSuccessful(false);
-
-        // Guardar la predicción
-        historyRef.push().setValue(historyItem)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Predicción guardada exitosamente");
-                    loadPredictionHistory();
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Error al guardar predicción", e));
     }
     private void updateAutoTrainingConfig(boolean enabled) {
         mDatabase.child("ia_config").child("autoTraining").setValue(enabled)
@@ -569,40 +483,13 @@ public class TicketAIActivity extends AppCompatActivity {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        boolean predictionFound = false;
-
                         for (DataSnapshot predictionSnapshot : snapshot.getChildren()) {
                             PredictionHistoryItem prediction = predictionSnapshot.getValue(PredictionHistoryItem.class);
                             if (prediction != null && !prediction.isVerified()) {
-                                predictionFound = true;
                                 boolean wasSuccessful = prediction.getRecommendedWorker().equals(actualWorkerId);
-
-                                // Actualizar la predicción en la base de datos
-                                DatabaseReference predictionRef = predictionSnapshot.getRef();
-                                Map<String, Object> updates = new HashMap<>();
-                                updates.put("verified", true);
-                                updates.put("wasSuccessful", wasSuccessful);
-                                updates.put("verificationTimestamp", System.currentTimeMillis());
-
-                                predictionRef.updateChildren(updates)
-                                        .addOnSuccessListener(aVoid -> {
-                                            // Actualizar estadísticas globales
-                                            updatePredictionStats(wasSuccessful);
-                                            // Notificar al sistema de IA
-                                            if (aiManager != null) {
-                                                aiManager.verifyPrediction(ticketId, actualWorkerId, wasSuccessful);
-                                            }
-                                            Log.d(TAG, String.format("Predicción verificada - ID: %s, Exitosa: %b",
-                                                    ticketId, wasSuccessful));
-                                        })
-                                        .addOnFailureListener(e ->
-                                                Log.e(TAG, "Error al actualizar predicción", e));
+                                aiManager.verifyPrediction(ticketId, actualWorkerId, wasSuccessful);
+                                break;
                             }
-                        }
-
-                        // Si no se encontró la predicción en el historial reciente
-                        if (!predictionFound) {
-                            Log.w(TAG, "No se encontró predicción para el ticket: " + ticketId);
                         }
                     }
 
@@ -654,57 +541,6 @@ public class TicketAIActivity extends AppCompatActivity {
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
-    private void updatePredictionStatsWithConfidence(double confidence) {
-        mDatabase.child("ia_stats").runTransaction(new Transaction.Handler() {
-            @NonNull
-            @Override
-            public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                Map<String, Object> stats = (Map<String, Object>) mutableData.getValue();
-                if (stats == null) {
-                    stats = new HashMap<>();
-                    stats.put("totalPredictions", 0L);
-                    stats.put("successfulPredictions", 0L);
-                    stats.put("successRate", 0.0);
-                }
-
-                long totalPredictions = ((Number) stats.get("totalPredictions")).longValue();
-                long successfulPredictions = ((Number) stats.get("successfulPredictions")).longValue();
-
-                totalPredictions++;
-                if (confidence >= 0.5) {
-                    successfulPredictions++;
-                }
-
-                double successRate = totalPredictions > 0 ?
-                        (successfulPredictions * 100.0 / totalPredictions) : 0.0;
-
-                stats.put("totalPredictions", totalPredictions);
-                stats.put("successfulPredictions", successfulPredictions);
-                stats.put("successRate", successRate);
-
-                mutableData.setValue(stats);
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(DatabaseError error, boolean committed, DataSnapshot snapshot) {
-                if (error != null) {
-                    Log.e(TAG, "Error al actualizar estadísticas", error.toException());
-                    return;
-                }
-                if (committed && snapshot.exists()) {
-                    Map<String, Object> stats = (Map<String, Object>) snapshot.getValue();
-                    if (stats != null) {
-                        runOnUiThread(() -> {
-                            long total = ((Number) stats.get("totalPredictions")).longValue();
-                            double rate = ((Number) stats.get("successRate")).doubleValue();
-                            updateStatistics((int) total, rate);
-                        });
-                    }
-                }
-            }
-        });
-    }
     private void updateStatistics(int totalPredictions, double successRate) {
         runOnUiThread(() -> {
             if (tvTotalPredictions != null) {
@@ -712,12 +548,10 @@ public class TicketAIActivity extends AppCompatActivity {
                         "Total de predicciones: %d", totalPredictions));
             }
             if (tvSuccessRate != null) {
-                // Asegurar que la tasa tenga al menos un decimal
                 tvSuccessRate.setText(String.format(Locale.getDefault(),
                         "Tasa de éxito: %.1f%%", Math.max(0.0, successRate)));
             }
             if (progressSuccess != null) {
-                // Asegurar que el progreso esté entre 0 y 100
                 progressSuccess.setProgress((int) Math.min(100, Math.max(0, successRate)));
             }
 

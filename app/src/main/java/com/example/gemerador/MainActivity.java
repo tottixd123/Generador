@@ -2,6 +2,8 @@ package com.example.gemerador;
 
 import android.content.SharedPreferences;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -9,6 +11,9 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
 import com.example.gemerador.Admin.AdminMenu;
 import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.Trabajador.TrabajadorMenu;
@@ -26,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 1234;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +40,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        requestNotificationPermission();
     }
-
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
+            }
+        }
+    }
     @Override
     public void onStart() {
         super.onStart();
@@ -147,6 +160,18 @@ public class MainActivity extends AppCompatActivity {
                         mAuth.signOut();
                         setupButtons();
                     });
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permiso concedido, puedes mostrar notificaciones
+            } else {
+                // Permiso denegado, informa al usuario que no podrá recibir notificaciones
+                Toast.makeText(this, "No podrás recibir notificaciones sin este permiso", Toast.LENGTH_LONG).show();
+            }
         }
     }
 

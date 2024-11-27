@@ -1,14 +1,18 @@
 package com.example.gemerador.Crear_Ti;
 
 
+import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -19,6 +23,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import com.example.gemerador.Inicio_User.Inicio_User;
 import com.example.gemerador.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,6 +46,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -261,13 +271,6 @@ public class Crear_nuevo_ti extends AppCompatActivity {
 
         return Bitmap.createScaledBitmap(original, newWidth, newHeight, true);
     }
-    private String encodeImage(Bitmap bitmap) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
-        byte[] imageBytes = baos.toByteArray();
-        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-    }
-
     private void sendTicket() {
         if (!validateInput()) {
             return;
@@ -349,7 +352,6 @@ public class Crear_nuevo_ti extends AppCompatActivity {
         }
         return ticketJson;
     }
-
     private void sendTicketToMockAPI(JSONObject ticketJson) {
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
@@ -381,7 +383,13 @@ public class Crear_nuevo_ti extends AppCompatActivity {
                     runOnUiThread(() -> {
                         Toast.makeText(Crear_nuevo_ti.this,
                                 "Ticket creado exitosamente", Toast.LENGTH_SHORT).show();
-                        navigateToHome();
+                        try {
+                            String ticketNumber = ticketJson.getString("ticketNumber");
+                            String message = "Su ticket #" + ticketNumber + " ha sido creado exitosamente.";
+                            sendConfirmationNotification(ticketNumber, message);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     });
                 } else {
                     runOnUiThread(() -> {
@@ -391,6 +399,41 @@ public class Crear_nuevo_ti extends AppCompatActivity {
                 }
             }
         });
+    }
+    private void sendConfirmationNotification(String ticketNumber, String message) {
+        String priority = prioritySpinner.getSelectedItem().toString();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        String username = currentUser != null ?
+                (currentUser.getEmail() != null ? currentUser.getEmail() : "Usuario") : "Sistema";
+        showSystemNotification(ticketNumber, message);
+        SharedPreferences prefs = getSharedPreferences("NotificationPrefs", MODE_PRIVATE);
+        try {
+            String savedNotifications = prefs.getString("notifications", "[]");
+            JSONArray notificationsArray = new JSONArray(savedNotifications);
+            JSONObject newNotification = new JSONObject();
+            newNotification.put("ticketId", ticketNumber);
+            newNotification.put("status", "Creado");
+            newNotification.put("message", message);
+            newNotification.put("timestamp", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss",
+                    Locale.getDefault()).format(new Date()));
+            newNotification.put("priority", priority);
+            newNotification.put("username", username);
+            JSONArray updatedArray = new JSONArray();
+            updatedArray.put(newNotification);
+            for (int i = 0; i < notificationsArray.length(); i++) {
+                updatedArray.put(notificationsArray.get(i));
+            }
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("notifications", updatedArray.toString());
+            editor.apply();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Intent intent = new Intent(this, Inicio_User.class);
+        intent.putExtra("showNotification", true);
+        startActivity(intent);
+        finish();
     }
     private void incrementTicketCounter() {
         ticketCounter++;
@@ -423,5 +466,26 @@ public class Crear_nuevo_ti extends AppCompatActivity {
 
     private void updateTicketCounter() {
         ticketCounterTextView.setText("Ticket-C" + String.format("%03d", ticketCounter));
+    }
+    private void showSystemNotification(String ticketNumber, String message) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "ticket_channel")
+                .setSmallIcon(R.drawable.gata)
+                .setContentTitle("Nuevo Ticket Creado")
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+        Intent intent = new Intent(this, Inicio_User.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        builder.setContentIntent(pendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(Integer.parseInt(ticketNumber.replaceAll("\\D+","")), builder.build());
+        } else {
+            Log.e("Notification", "No permission to post notifications");
+        }
     }
 }

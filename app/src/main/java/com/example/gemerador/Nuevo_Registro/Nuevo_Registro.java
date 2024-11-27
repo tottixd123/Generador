@@ -9,7 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
-
+import androidx.appcompat.app.AlertDialog;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -172,12 +172,9 @@ public class Nuevo_Registro extends AppCompatActivity {
                     .setValue(nuevaSolicitud)
                     .addOnSuccessListener(aVoid -> {
                         Log.d("Firebase", "Solicitud guardada exitosamente");
-                        Toast.makeText(Nuevo_Registro.this,
-                                "Solicitud de registro enviada exitosamente",
-                                Toast.LENGTH_SHORT).show();
+                        mostrarMensajeConfirmacion();
                         limpiarCampos();
                         isProcessing = false;
-                        finish();
                     })
                     .addOnFailureListener(e -> {
                         Log.e("Firebase", "Error al guardar solicitud", e);
@@ -191,7 +188,17 @@ public class Nuevo_Registro extends AppCompatActivity {
             btnEnviarSolicitud.setEnabled(true);
         }
     }
-
+    private void mostrarMensajeConfirmacion() {
+        new AlertDialog.Builder(this)
+                .setTitle("Solicitud Enviada")
+                .setMessage("Su solicitud ha sido enviada exitosamente. Nuestro equipo se pondrá en contacto con usted en un máximo de 48 horas hábiles para brindarle sus credenciales.")
+                .setPositiveButton("Aceptar", (dialog, which) -> {
+                    dialog.dismiss();
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
+    }
     private boolean validarCampos(String nombreCompleto, String email, String numeroContacto) {
         if (nombreCompleto.isEmpty() || email.isEmpty() || numeroContacto.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show();
